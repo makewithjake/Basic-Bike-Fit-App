@@ -2,10 +2,12 @@
 
 ## Status
 - [x] Method selected
-- [ ] Phase 1 – Method 2 (Pointer Events) implemented
-- [ ] Phase 1 – Method 2 tested
+- [x] Phase 1 – Method 2 (Pointer Events) implemented
+- [x] Phase 1 – Method 2 tested
 - [x] Phase 2 – Method 3 (Ghost Point) implemented
-- [ ] Phase 2 – Method 3 tested
+- [x] Phase 2 – Method 3 tested
+- [x] Phase 3 – Drag Loupe implemented
+- [x] Phase 3 – Drag Loupe tested
 
 ---
 
@@ -213,12 +215,12 @@ No changes needed. The loupe is drawn entirely on the canvas.
 
 ### Acceptance criteria
 
-- [ ] Loupe appears immediately when a touch drag begins and disappears on release
-- [ ] Loupe is always above (or away from) the fingertip and never clips off-screen
-- [ ] The cyan center dot in the loupe lands exactly where the finger lifts (tested across all 7 points)
-- [ ] No loupe appears during mouse/trackpad drags on desktop
-- [ ] No regression: all 7 points place and drag correctly on desktop
-- [ ] No regression: angles and PDF export unaffected
+- [x] Loupe appears immediately when a touch drag begins and disappears on release
+- [x] Loupe is always above (or away from) the fingertip and never clips off-screen
+- [x] The cyan center dot in the loupe lands exactly where the finger lifts (tested across all 7 points)
+- [x] No loupe appears during mouse/trackpad drags on desktop
+- [x] No regression: all 7 points place and drag correctly on desktop
+- [x] No regression: angles and PDF export unaffected
 
 ---
 
@@ -231,7 +233,7 @@ No changes needed. The loupe is drawn entirely on the canvas.
 - [x] Implement Phase 2 (Method 3)
 - [x] Verify points 5 and 6 placement is stable end-to-end
 - [x] Update plan.md mobile section once both phases confirmed working
-- [ ] Implement Phase 3 (Drag Loupe)
-- [ ] Test loupe on iOS Safari – verify center dot matches final placement for all 7 points
-- [ ] Test loupe on Android Chrome
-- [ ] Confirm no desktop regression
+- [x] Implement Phase 3 (Drag Loupe)
+- [x] Test loupe on iOS Safari – verify center dot matches final placement for all 7 points
+- [x] Test loupe on Android Chrome
+- [x] Confirm no desktop regression

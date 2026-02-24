@@ -8,7 +8,6 @@
 - Browser localStorage – session save / restore
 
 ## Current Focus
-- **Mobile compatibility** – touch targets too small, layout breaks on narrow viewports; needs responsive button grid, larger hit areas, and pinch-to-zoom safe canvas handling
 - **Bike type selector** – add Road / Gravel / MTB dropdown; each type carries its own ideal angle ranges (MTB upright geometry differs from road aero)
 - **Adjustment recommendations** – upgrade vague advice ("RAISE saddle height") to specific, actionable guidance (e.g. "Raise saddle ~5–10 mm") and tailor advice per bike type
 
@@ -23,10 +22,13 @@
 - [x] Demo image loader
 - [x] Help modal
 - [x] Clear / reset (wipes markers, image, and localStorage)
+- [x] Mobile Phase 1 – Pointer Events API (`pointerdown/move/up`, `touch-action: none`); stable drag coordinates on iOS & Android
+- [x] Mobile Phase 2 – Ghost Point pattern; points 5 & 6 placement race condition resolved
+- [x] Mobile Phase 3 – Drag Loupe; magnified canvas crop above finger during touch drag, clamped to canvas bounds (all phases tested on iOS Safari & Android Chrome)
 
 ## Notes / Rules
 - No external JS frameworks – keep it vanilla
 - No html2canvas – PDF is built programmatically; angle logic must be duplicated in the PDF path (it cannot read from the live DOM)
 - CSP meta tag is enforced in `index.html` – any new CDN script needs a matching `integrity` hash
 - Bike type and riding style are **separate axes** – MTB + Aggressive is a valid combination; ranges are keyed `IDEAL_RANGES[joint][bikeType][ridingStyle]` e.g. `IDEAL_RANGES.Knee.MTB.Relaxed → [145, 155]`; Road and Gravel ranges sit closer together, MTB skews more upright across all styles
-- Touch events already have `passive: false` on `touchstart` / `touchmove` for drag support – preserve this when adding mobile layout changes
+- Canvas drag events now use the Pointer Events API (`pointerdown / pointermove / pointerup`) with `touch-action: none` on the canvas – the old `touchstart / touchmove` passive:false blocks have been removed; preserve `touch-action: none` when making layout changes
