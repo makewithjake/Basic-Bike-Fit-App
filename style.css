@@ -1,0 +1,94 @@
+:root {
+    --brand-green: #00ff00;
+    --brand-orange: #f39c12;
+}
+
+#cycl3d-app-root {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: 'Segoe UI', sans-serif;
+    padding: 20px 0;
+}
+
+#report-wrapper {
+    width: 100%;
+    max-width: 850px;
+    background: white;
+    padding: 20px;
+}
+
+#container {
+    position: relative;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    line-height: 0;
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+}
+
+img#displayImg {
+    width: 100%;
+    height: auto;
+    max-height: 70vh;
+    object-fit: contain;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 12px;
+    text-align: left;
+}
+
+.status-ok { color: #28a745; font-weight: bold; }
+.status-warn { color: #dc3545; font-weight: bold; }
+
+.action-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+    width: 95%;
+    max-width: 850px;
+}
+
+button {
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.pdf-btn { background: #007bff; color: white; grid-column: span 2; }
+.save-btn { background: #28a745; color: white; }
+.help-btn { background: var(--brand-orange); color: white; }
+
+#help-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+}
+
+.modal-content {
+    background: white;
+    margin: 15% auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 12px;
+}

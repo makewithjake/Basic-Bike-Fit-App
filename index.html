@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cycl3D Basic Bike Fit Tool</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <div id="cycl3d-app-root">
+        <div id="report-wrapper">
+            <div class="banner">
+                <img src="https://cdn.shopify.com/s/files/1/0726/2555/3664/files/cycl3d_banner_5e671349-1f3c-4f0a-b7a7-7717f045a4ef.png?v=1767125769" alt="Cycl3D Banner">
+                <h2>Cycl3D Basic Bike Fit Tool</h2>
+            </div>
+
+            <div id="container">
+                <img id="displayImg" src="" alt="">
+                <canvas id="skeletonCanvas"></canvas>
+            </div>
+
+            <div id="results-area"></div>
+
+            <div class="disclaimer">
+                <strong>Legal Disclaimer:</strong> This tool is provided for informational and educational purposes only. Make with Jake LLC and Cycl3D assume no liability for injuries or mechanical failures resulting from use of this application. This software-generated analysis is based on 2D imagery and does not replace the comprehensive assessment of a certified professional bike fitter.
+            </div>
+        </div>
+
+            <div class="no-print-zone">
+            <label>1. Upload Side-View Photo:</label>
+            <input type="file" id="upload" accept="image/*">
+            <label>2. Select Riding Style:</label>
+            <select id="fitType">
+                <option value="Relaxed">Relaxed (Comfort)</option>
+                <option value="Balanced" selected>Balanced (All-Road)</option>
+                <option value="Aggressive">Aggressive (Race/Aero)</option>
+            </select>
+        </div>
+
+        <div class="action-buttons">
+            <button type="button" id="clearBtn" class="gray-btn">Clear Canvas & Reset</button>
+            <button type="button" class="help-btn" id="helpBtn">Help?</button>
+            <button type="button" class="save-btn" id="saveBtn">Save Session</button>
+            <button type="button" class="pdf-btn" id="pdfBtn">Download PDF Report</button>
+        </div>
+
+        <div id="help-modal">
+            <div class="modal-content">
+                <span id="closeModal" class="close">&times;</span>
+                <h3>How to use Cycl3D Bike Fit Tool</h3>
+                <p><strong>Photo:</strong> Pedal at 6 o'clock, hands on hoods.</p>
+                <p><strong>Sequence:</strong> Toe > Ankle > Knee > Hip > Shoulder > Elbow > Hand.</p>
+                <button type="button" id="closeHelpBtn">Got it!</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
