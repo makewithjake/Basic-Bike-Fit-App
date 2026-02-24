@@ -169,7 +169,10 @@ document.getElementById('upload').onchange = (e) => {
     const reader = new FileReader();
     reader.onload = (event) => {
         img.src = event.target.result;
-        img.onload = () => draw();
+        img.onload = () => {
+            img.style.display = '';
+            draw();
+        };
     };
     reader.readAsDataURL(e.target.files[0]);
 };
@@ -195,12 +198,27 @@ function loadDemoImage(url, clearMarkers = false) {
         alert('Failed to load demo image.');
     };
     if (clearMarkers) points = [];
+    img.style.display = '';
     img.src = url;
 }
 
 document.getElementById('demoBtn').onclick = () => loadDemoImage(demoUrl, false);
 
-document.getElementById('clearBtn').onclick = () => { points = []; draw(); };
+document.getElementById('clearBtn').onclick = () => {
+    // Clear in-memory points and UI, remove saved session, and clear uploaded file
+    points = [];
+    resultsArea.innerHTML = "";
+    try { localStorage.removeItem('cycl3d_save'); } catch (e) { /* ignore */ }
+    // Ensure any pending demo/image load state is cancelled and handlers won't show alerts
+    demoLoading = false;
+    img.onload = null;
+    img.onerror = null;
+    img.src = "";
+    img.style.display = 'none';
+    const uploadInput = document.getElementById('upload');
+    if (uploadInput) uploadInput.value = "";
+    draw();
+};
 fitTypeSelect.onchange = draw;
 
 // UI Handlers
