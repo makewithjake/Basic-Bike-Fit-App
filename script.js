@@ -476,10 +476,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('help-modal').style.display = 'none'
     );
 
-    // PDF Export – rebuilt from scratch.
-    // Composites the photo + skeleton overlay into a single off-screen canvas at full
-    // natural resolution, embeds the banner and measurements table into a self-contained
-    // HTML string, then exports via html2pdf on a single A4 page.
+    // PDF Export – direct jsPDF construction (no html2canvas / no DOM screenshot).
+    // Composites the photo + skeleton at full natural resolution, then builds the
+    // PDF document programmatically: addImage() for the banner and photo, autoTable()
+    // for the measurements, and splitTextToSize() for the disclaimer. Because no DOM
+    // rendering is involved there are zero blank-page failure modes.
     document.getElementById('pdfBtn').addEventListener('click', async () => {
 
         // Guard: require a loaded photo before exporting.
@@ -491,7 +492,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const pdfBtn       = document.getElementById('pdfBtn');
         pdfBtn.disabled    = true;
         pdfBtn.textContent = 'Generating\u2026';
-        let staging = null; // declared here so finally{} can always clean it up
         try {
             // ── Step 1: Composite photo + skeleton overlay at full natural resolution ──
             const naturalW = img.naturalWidth;
@@ -557,92 +557,134 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const compositeDataURL = offCanvas.toDataURL('image/jpeg', 0.92);
 
-            // ── Step 2: Embed banner as a data URL ───────────────────────────────────
+            // ── Step 2: Embed banner as a PNG data URL ────────────────────────────────
             const bannerImgEl = document.querySelector('.banner img');
             let bannerDataURL = '';
+            let bannerNatW    = 0;
+            let bannerNatH    = 0;
             try {
-                const bc    = document.createElement('canvas');
-                bc.width    = bannerImgEl.naturalWidth  || bannerImgEl.width;
-                bc.height   = bannerImgEl.naturalHeight || bannerImgEl.height;
+                const bc  = document.createElement('canvas');
+                bc.width  = bannerImgEl.naturalWidth  || bannerImgEl.width;
+                bc.height = bannerImgEl.naturalHeight || bannerImgEl.height;
+                bannerNatW = bc.width;
+                bannerNatH = bc.height;
                 bc.getContext('2d').drawImage(bannerImgEl, 0, 0);
                 bannerDataURL = bc.toDataURL('image/png');
             } catch (e) {
                 console.warn('Banner image could not be embedded in PDF:', e);
             }
 
-            // ── Step 3: Build report as a hidden off-screen DOM element ─────────────
-            // html2canvas requires a real, mounted DOM node to render correctly.
-            // Passing a full HTML document string via .from(str,'string') is unreliable
-            // because the <!DOCTYPE>/<html> wrapper becomes malformed when set via
-            // innerHTML, producing a blank canvas. We create a plain <div> instead,
-            // inject only the body content, and attach it just outside the viewport
-            // so html2canvas can measure and paint it, then remove it after export.
-            const tableHTML = resultsArea.innerHTML || '';
-            const fitLabel  = fitTypeSelect.value;
-
-            staging = document.createElement('div');
-            // Must be positioned inside the viewport (top:0, left:0) or html2canvas
-            // renders a blank frame. Near-zero opacity + z-index:-9999 keeps it
-            // invisible to the user without taking it out of the render area.
-            staging.style.cssText = [
-                'position:fixed',
-                'top:0',
-                'left:0',
-                'width:794px',
-                'background:#fff',
-                'color:#111',
-                'font-family:Arial,sans-serif',
-                'padding:16px',
-                'box-sizing:border-box',
-                'z-index:-9999',
-                'opacity:0.01',
-                'pointer-events:none'
-            ].join(';');
-
-            staging.innerHTML = `
-<style>
-  .pdf-banner{text-align:center;margin-bottom:10px}
-  .pdf-banner img{max-width:100%;height:auto;display:block;margin:0 auto}
-  .pdf-title{text-align:center;font-size:18px;font-weight:bold;margin:8px 0 4px}
-  .pdf-fit-label{text-align:center;font-size:13px;color:#555;margin-bottom:12px}
-  .pdf-photo{text-align:center;margin-bottom:14px}
-  .pdf-photo img{max-width:100%;height:auto;display:block;margin:0 auto}
-  .pdf-staging table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px}
-  .pdf-staging th{background:#222;color:#fff;padding:7px 9px;text-align:left}
-  .pdf-staging td{padding:6px 9px;border-bottom:1px solid #ddd}
-  .pdf-staging tr:nth-child(even) td{background:#f7f7f7}
-  .status-ok{color:#28a745;font-weight:bold}
-  .status-warn{color:#dc3545;font-weight:bold}
-  .advice-box{font-style:italic}
-  .pdf-disclaimer{font-size:10px;color:#999;border-top:1px solid #eee;padding-top:8px;margin-top:8px}
-</style>
-<div class="pdf-banner">${bannerDataURL ? `<img src="${bannerDataURL}" alt="Cycl3D Banner">` : ''}</div>
-<div class="pdf-title">Cycl3D Basic Bike Fit Report</div>
-<div class="pdf-fit-label">Riding Style: <strong>${fitLabel}</strong></div>
-<div class="pdf-photo"><img src="${compositeDataURL}" alt="Bike Fit Analysis"></div>
-${tableHTML}
-<p class="pdf-disclaimer"><strong>Legal Disclaimer:</strong> This tool is provided for informational and educational purposes only. Make with Jake LLC and Cycl3D assume no liability for injuries or mechanical failures resulting from use of this application. This software-generated analysis is based on 2D imagery and does not replace the comprehensive assessment of a certified professional bike fitter.</p>`;
-
-            staging.classList.add('pdf-staging');
-            document.body.appendChild(staging);
-
-            // ── Step 4: Export via html2pdf ──────────────────────────────────────────
-            const opt = {
-                margin:      [10, 10, 10, 10],
-                filename:    'Cycl3D_Bike_Fit_Report.pdf',
-                image:       { type: 'jpeg', quality: 0.95 },
-                html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff', windowWidth: 794, scrollX: 0, scrollY: 0 },
-                jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
-                pagebreak:   { mode: 'avoid-all' }
+            // ── Step 3: Build table rows from angle data (pure JS, no DOM) ──────────
+            // Replicates the same angle calculations used in draw() / updateTable().
+            // Produces a structured array that autoTable() can render directly.
+            const ADVICE = {
+                Knee:     { low: 'RAISE saddle height',        high: 'LOWER saddle height'        },
+                Back:     { low: 'Higher bars (add spacers)',  high: 'Lower bars (remove spacers)' },
+                Shoulder: { low: 'Longer stem',                high: 'Shorter stem'                },
+                Elbow:    { low: 'Shorten reach',              high: 'Increase reach'              },
+                Ankle:    { low: 'Check cleat fore/aft',       high: 'Check cleat fore/aft'        }
             };
 
-            await html2pdf().set(opt).from(staging).save();
+            const fitType   = fitTypeSelect.value;
+            const COLOR_OK  = [40, 167, 69];  // green
+            const COLOR_BAD = [220, 53, 69];  // red
+
+            const jointDefs = [
+                { name: 'Ankle',    calc: () => (points[0] && points[1] && points[2]) ? calcAngle(points[0], points[1], points[2]) : null },
+                { name: 'Knee',     calc: () => (points[1] && points[2] && points[3]) ? calcAngle(points[1], points[2], points[3]) : null },
+                { name: 'Back',     calc: () => (points[3] && points[4]) ? Math.abs(Math.atan2(points[4].y - points[3].y, points[4].x - points[3].x) * (180 / Math.PI)) : null },
+                { name: 'Shoulder', calc: () => (points[3] && points[4] && points[5]) ? calcAngle(points[3], points[4], points[5]) : null },
+                { name: 'Elbow',    calc: () => (points[4] && points[5] && points[6]) ? Math.abs(180 - calcAngle(points[4], points[5], points[6])) : null }
+            ];
+
+            const tableRows = [];
+            for (const { name, calc } of jointDefs) {
+                const angle = calc();
+                if (angle === null) continue;
+                const range      = IDEAL_RANGES[name][fitType];
+                const isOk       = angle >= range[0] && angle <= range[1];
+                const direction  = angle < range[0] ? 'low' : 'high';
+                const adviceText = isOk ? 'Optimal ✓' : ADVICE[name][direction];
+                tableRows.push([
+                    { content: name },
+                    { content: `${angle.toFixed(1)}°`, styles: { textColor: isOk ? COLOR_OK : COLOR_BAD, fontStyle: 'bold' } },
+                    { content: `${range[0]}–${range[1]}°` },
+                    { content: adviceText }
+                ]);
+            }
+
+            // ── Step 4: Build PDF directly with jsPDF + autoTable ────────────────────
+            // addImage() embeds pixel data straight into the PDF stream – no DOM
+            // rendering, no html2canvas, no blank-page risk.
+            const { jsPDF }  = window.jspdf;
+            const doc        = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+            const margin     = 15;           // mm
+            const pageW      = 210;          // A4 width in mm
+            const contentW   = pageW - margin * 2;
+            let   cursorY    = margin;
+
+            // Banner image
+            if (bannerDataURL && bannerNatW && bannerNatH) {
+                const maxBannerH = 22;
+                const bannerH    = Math.min((bannerNatH / bannerNatW) * contentW, maxBannerH);
+                const bannerW    = (bannerNatW / bannerNatH) * bannerH;
+                const bannerX    = margin + (contentW - bannerW) / 2;
+                doc.addImage(bannerDataURL, 'PNG', bannerX, cursorY, bannerW, bannerH);
+                cursorY += bannerH + 5;
+            }
+
+            // Title
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Cycl3D Basic Bike Fit Report', pageW / 2, cursorY, { align: 'center' });
+            cursorY += 7;
+
+            // Riding style label
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Riding Style: ${fitTypeSelect.value}`, pageW / 2, cursorY, { align: 'center' });
+            cursorY += 8;
+
+            // Composite photo – capped at 100 mm tall so the table fits on the same page
+            const maxPhotoH  = 100;
+            const photoAspect = naturalW / naturalH;
+            let photoW = contentW;
+            let photoH = photoW / photoAspect;
+            if (photoH > maxPhotoH) { photoH = maxPhotoH; photoW = photoH * photoAspect; }
+            const photoX = margin + (contentW - photoW) / 2;
+            doc.addImage(compositeDataURL, 'JPEG', photoX, cursorY, photoW, photoH);
+            cursorY += photoH + 6;
+
+            // Measurements table
+            if (tableRows.length > 0) {
+                doc.autoTable({
+                    startY:              cursorY,
+                    head:                [['Joint', 'Measured', 'Ideal Range', 'Recommendation']],
+                    body:                tableRows,
+                    margin:              { left: margin, right: margin },
+                    headStyles:          { fillColor: [34, 34, 34], textColor: 255, fontStyle: 'bold' },
+                    alternateRowStyles:  { fillColor: [247, 247, 247] },
+                    styles:              { fontSize: 11, cellPadding: 3 },
+                    tableWidth:          contentW
+                });
+                cursorY = doc.lastAutoTable.finalY + 8;
+            }
+
+            // Legal disclaimer
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(150);
+            const disclaimerText = 'Legal Disclaimer: This tool is provided for informational and educational purposes only. Make with Jake LLC and Cycl3D assume no liability for injuries or mechanical failures resulting from use of this application. This software-generated analysis is based on 2D imagery and does not replace the comprehensive assessment of a certified professional bike fitter.';
+            const disclaimerLines = doc.splitTextToSize(disclaimerText, contentW);
+            doc.text(disclaimerLines, margin, cursorY);
+
+            // Save to disk
+            doc.save('Cycl3D_Bike_Fit_Report.pdf');
 
         } catch (err) {
             console.error('PDF export failed:', err);
             alert('PDF export failed. Please try again.');
         } finally {
-            if (staging && staging.parentNode) staging.parentNode.removeChild(staging);
             pdfBtn.disabled    = false;
             pdfBtn.textContent = 'Download PDF Report';
         }
