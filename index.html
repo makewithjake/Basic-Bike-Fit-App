@@ -72,5 +72,35 @@
     </div>
 
     <script src="script.js"></script>
+
+    <!-- ── Iframe height broadcaster ─────────────────────────────────────────
+         When this app is embedded in an iframe (e.g. on cycl3d.com via Shopify),
+         this script measures the full rendered height and posts it to the parent
+         page so the iframe can resize itself to fit the content with no scrollbar.
+         It only activates when running inside an iframe; it does nothing when the
+         app is visited directly. -->
+    <script>
+        (function () {
+            // Bail out if we are the top-level page (not embedded in an iframe)
+            if (window.self === window.top) return;
+
+            var root = document.getElementById('cycl3d-app-root');
+            if (!root) return;
+
+            function sendHeight() {
+                var h = document.documentElement.scrollHeight;
+                window.parent.postMessage({ type: 'cycl3d-height', height: h }, '*');
+            }
+
+            // Send once as soon as the DOM is ready
+            sendHeight();
+
+            // Re-send whenever the app content grows or shrinks
+            // (e.g. after a photo is uploaded, results appear, or the help modal opens)
+            if (window.ResizeObserver) {
+                new ResizeObserver(sendHeight).observe(root);
+            }
+        })();
+    </script>
 </body>
 </html>

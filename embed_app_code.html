@@ -1,0 +1,58 @@
+<!--
+  ╔══════════════════════════════════════════════════════════════════════════════╗
+  ║   Cycl3D Basic Bike Fit App – Shopify Embed Code                            ║
+  ╠══════════════════════════════════════════════════════════════════════════════╣
+  ║  HOW TO USE IN SHOPIFY                                                      ║
+  ║  ─────────────────────────────────────────────────────────────────────────  ║
+  ║  Option A – Custom HTML content block (recommended for most themes):        ║
+  ║    1. Open the page in the Shopify page editor.                             ║
+  ║    2. Add a "Custom HTML" content block.                                    ║
+  ║    3. Paste the <div> and <script> blocks below (everything between the     ║
+  ║       START COPY and END COPY markers).                                     ║
+  ║                                                                             ║
+  ║  Option B – Theme code (.liquid file):                                      ║
+  ║    If your theme's page editor strips <script> tags, add this code to a    ║
+  ║    section .liquid file in your Shopify theme editor instead.               ║
+  ║                                                                             ║
+  ║  MOBILE NOTE                                                                ║
+  ║  The iframe is set to 100% width and will scale to any screen size.        ║
+  ║  The app itself is responsive, so no extra work is needed on mobile.       ║
+  ╚══════════════════════════════════════════════════════════════════════════════╝
+-->
+
+<!-- ═══════════════════════ START COPY ════════════════════════════════════════ -->
+
+<!-- Outer wrapper: full width, hides any brief overflow flash during resize -->
+<div id="cycl3d-embed-wrapper" style="width:100%; position:relative; overflow:hidden;">
+
+    <iframe
+        id="cycl3d-frame"
+        src="https://makewithjake.github.io/Basic-Bike-Fit-App/"
+        width="100%"
+        height="640"
+        frameborder="0"
+        scrolling="no"
+        allow="camera"
+        style="display:block; border:none; overflow:hidden; width:100%; transition:height 0.2s ease;"
+        title="Cycl3D Basic Bike Fit Tool">
+    </iframe>
+
+</div>
+
+<script>
+    (function () {
+        var frame = document.getElementById('cycl3d-frame');
+        if (!frame) return;
+
+        window.addEventListener('message', function (event) {
+            // Security: only accept messages from the hosted app's origin
+            if (event.origin !== 'https://makewithjake.github.io') return;
+            if (!event.data || event.data.type !== 'cycl3d-height') return;
+
+            // Resize the iframe to match the app's reported content height
+            frame.style.height = event.data.height + 'px';
+        });
+    })();
+</script>
+
+<!-- ════════════════════════ END COPY ═════════════════════════════════════════ -->
