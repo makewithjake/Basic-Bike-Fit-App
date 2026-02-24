@@ -104,7 +104,121 @@ Method 1 is dropped — it solves the same coordinate drift problem as Method 2 
 **Acceptance criteria:**
 - [x] Points 5 and 6 land exactly where the finger lifts
 - [x] Ghost dot is clearly visible above the fingertip during drag
-- [ ] No regression in angle calculations or PDF export
+- [x] No regression in angle calculations or PDF export
+
+---
+
+## Phase 3 – Drag Loupe / Magnifier (mobile only)
+
+### Goal
+Show a magnified circular loupe above the user's finger while they drag a point, so the exact landing position is always visible. The loupe disappears on `pointerup`. Desktop is unaffected.
+
+---
+
+### Why past loupes placed the dot in the wrong spot
+
+Past implementations computed the loupe viewport from the raw finger/touch coordinates, but the actual point was placed at a *different* (offset or post-transform) coordinate. Because those two numbers came from separate reads at different moments, they were never guaranteed to match — especially once any scroll or reflow happened between the loupe sample and the commit.
+
+**The fix in our case is already baked in:** `ghostPoint` is the single source of truth. It is set by `getPos()` on every `pointermove`, it is what the loupe will sample, and — via `handleEnd()` — it is exactly the value written into `draggingPoint.x/y` on release. By design, the loupe center and the final placement are the same number. No second coordinate read, no offset math, no race condition.
+
+---
+
+### Coordinate mapping (why it stays accurate)
+
+The canvas is always sized to match the displayed image (`canvas.width = img.clientWidth`). `ghostPoint` is in canvas-coordinate space. To sample the correct crop of the *natural* (full-resolution) photo for the loupe `drawImage` call, we convert once:
+
+```
+srcX = ghostPoint.x × (img.naturalWidth  / canvas.width)
+srcY = ghostPoint.y × (img.naturalHeight / canvas.height)
+```
+
+The loupe shows a circular window of canvas-space radius `LOUPE_RADIUS / magnification` (e.g. 80px canvas space for a 1.5× glass at 120px radius) centered on `ghostPoint`. The point that gets committed is also `ghostPoint`. They are identical by construction.
+
+---
+
+### Design spec
+
+| Property | Value |
+|---|---|
+| Trigger | `pointerType === 'touch'` AND `ghostPoint !== null` |
+| Loupe diameter | 120 px (60 px radius) |
+| Magnification | 1.5× |
+| Canvas area shown | 80 px radius in canvas-space (120 / 1.5) |
+| Loupe center default | `ghostPoint.x`, `ghostPoint.y − 150` |
+| Clamping – top | `max(70, ghostPoint.y − 150)` |
+| Clamping – left / right | `clamp(70, canvas.width − 70, ghostPoint.x)` |
+| Border style | Cyan dashed circle (matches existing ghost dot: `rgba(0,220,255,0.9)`, line width 3, dash `[6,4]`) |
+| Center indicator | Small filled cyan dot (radius 4) at loupe center – represents where the point will land |
+| Backdrop | Semi-transparent dark ring (outer stroke, opacity ~0.4) on top of the clipped photo for edge definition |
+| Drawn | Last in `draw()`, on top of everything else |
+
+The 150 px upward offset places the loupe comfortably above a typical thumb. The clamps prevent the loupe from overflowing the canvas edge on any screen size.
+
+---
+
+### New state
+
+One new boolean variable alongside the existing state block:
+
+```javascript
+let isTouchDrag = false; // true only while a touch-pointer drag is active
+```
+
+---
+
+### Changes required
+
+#### `script.js`
+
+1. **State block** – add `let isTouchDrag = false;` next to `ghostPoint`.
+
+2. **`handleStart()`** – after `ghostPoint = null;`, add:
+   ```javascript
+   isTouchDrag = (e.pointerType === 'touch');
+   ```
+
+3. **`handleEnd()`** – after clearing `ghostPoint`, add:
+   ```javascript
+   isTouchDrag = false;
+   ```
+
+4. **New `drawLoupe()` helper** – called at the very end of `draw()` (after the ghost dot block). Responsibilities:
+   - Early-exit if `!ghostPoint || !isTouchDrag || !img.naturalWidth` (no loupe on desktop, no loupe before a photo is loaded)
+   - Compute `loupeX` / `loupeY` with the clamping rules above
+   - `ctx.save()`
+   - Clip context to a circle of radius `LOUPE_RADIUS` at `(loupeX, loupeY)`
+   - Compute `srcX`, `srcY`, `srcW`, `srcH` from `ghostPoint` and the natural-image scale factors
+   - `ctx.drawImage(img, srcX, srcY, srcW, srcH, loupeX − LOUPE_RADIUS, loupeY − LOUPE_RADIUS, LOUPE_DIAMETER, LOUPE_DIAMETER)` — this draws the magnified photo crop filling the clipped circle
+   - `ctx.restore()`
+   - Draw the outer cyan dashed border circle (same dash style as the ghost dot)
+   - Draw a small filled cyan center dot (radius 4) at `(loupeX, loupeY)`
+
+5. **`draw()`** – add `drawLoupe();` as the final line (after the existing ghost dot block).
+
+#### `style.css`
+
+No changes needed. The loupe is drawn entirely on the canvas.
+
+---
+
+### What is NOT changing
+
+- `getPos()` – unchanged; it is already the stable coordinate source
+- `handleMove()` – unchanged; it writes to `ghostPoint` exactly as now
+- All angle math and `updateTable()` – unchanged; `points` is still frozen during drag
+- PDF export – unchanged; `drawLoupe()` is only called inside `draw()` which is never called during PDF generation
+- Pointer capture, `touch-action: none`, all event listeners – unchanged
+
+---
+
+### Acceptance criteria
+
+- [ ] Loupe appears immediately when a touch drag begins and disappears on release
+- [ ] Loupe is always above (or away from) the fingertip and never clips off-screen
+- [ ] The cyan center dot in the loupe lands exactly where the finger lifts (tested across all 7 points)
+- [ ] No loupe appears during mouse/trackpad drags on desktop
+- [ ] No regression: all 7 points place and drag correctly on desktop
+- [ ] No regression: angles and PDF export unaffected
 
 ---
 
@@ -115,5 +229,9 @@ Method 1 is dropped — it solves the same coordinate drift problem as Method 2 
 - [x] Test Phase 1 on Android Chrome
 - [x] Confirm stable before starting Phase 2
 - [x] Implement Phase 2 (Method 3)
-- [ ] Verify points 5 and 6 placement is stable end-to-end
-- [ ] Update plan.md mobile section once both phases confirmed working
+- [x] Verify points 5 and 6 placement is stable end-to-end
+- [x] Update plan.md mobile section once both phases confirmed working
+- [ ] Implement Phase 3 (Drag Loupe)
+- [ ] Test loupe on iOS Safari – verify center dot matches final placement for all 7 points
+- [ ] Test loupe on Android Chrome
+- [ ] Confirm no desktop regression

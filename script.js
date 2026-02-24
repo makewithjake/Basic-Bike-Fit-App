@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let points        = [];    // Array of { x, y } joint marker positions (grows as user clicks)
     let draggingPoint = null;  // The specific point currently being dragged (null if none)
     let ghostPoint    = null;  // Live drag-preview position – committed to points on pointerup
+    let isTouchDrag   = false; // True only while a touch-pointer drag is active (Phase 3 loupe)
     let lastX         = 0;    // Last recorded pointer X position during drag
     let lastY         = 0;    // Last recorded pointer Y position during drag
     let demoLoading   = false; // Prevents multiple simultaneous demo image requests
@@ -197,6 +198,98 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.fill();
             ctx.restore();
         }
+
+        // Phase 3: draw the drag loupe for touch interactions.
+        drawLoupe();
+    }
+
+    // ============================================================
+    // DRAG LOUPE (Phase 3 – touch magnifier)
+    // ============================================================
+
+    /**
+     * drawLoupe()
+     *
+     * Renders a circular magnifying loupe above the user's finger during a
+     * touch drag so the exact placement position is always visible.
+     *
+     * Only active when:
+     *   - isTouchDrag is true  (pointer type was 'touch')
+     *   - ghostPoint is set    (a drag is in progress)
+     *   - the photo is loaded  (img.naturalWidth > 0)
+     *
+     * ghostPoint is the single source of truth: it is what the loupe samples
+     * AND what handleEnd() commits into draggingPoint – so the loupe center
+     * and the final placement are identical by construction.
+     */
+    function drawLoupe() {
+        // ── Early exit on desktop / no drag / no image ───────────────────────
+        if (!ghostPoint || !isTouchDrag || !img.naturalWidth) return;
+
+        const LOUPE_RADIUS    = 60;  // Display radius of the loupe circle (px)
+        const LOUPE_DIAMETER  = LOUPE_RADIUS * 2;
+        const MAGNIFICATION   = 1.5;
+        // Radius of the canvas-space window that the loupe shows.
+        const SRC_RADIUS      = LOUPE_RADIUS / MAGNIFICATION; // 40px canvas-space
+
+        // ── Loupe centre position (clamped to stay inside the canvas) ────────
+        const rawLoupeX = ghostPoint.x;
+        const rawLoupeY = ghostPoint.y - 150; // Default: 150px above the finger
+
+        const loupeX = Math.max(LOUPE_RADIUS + 10, Math.min(canvas.width  - LOUPE_RADIUS - 10, rawLoupeX));
+        const loupeY = Math.max(LOUPE_RADIUS + 10, rawLoupeY);
+
+        // ── Map canvas-space ghost position to natural-image pixels ──────────
+        const scaleX = img.naturalWidth  / canvas.width;
+        const scaleY = img.naturalHeight / canvas.height;
+
+        const srcW = SRC_RADIUS * 2 * scaleX;
+        const srcH = SRC_RADIUS * 2 * scaleY;
+        const srcX = (ghostPoint.x - SRC_RADIUS) * scaleX;
+        const srcY = (ghostPoint.y - SRC_RADIUS) * scaleY;
+
+        ctx.save();
+
+        // ── Clip to a circle so the photo crop appears circular ───────────────
+        ctx.beginPath();
+        ctx.arc(loupeX, loupeY, LOUPE_RADIUS, 0, Math.PI * 2);
+        ctx.clip();
+
+        // Draw the magnified photo crop filling the clipped circle.
+        ctx.drawImage(
+            img,
+            srcX, srcY, srcW, srcH,                                        // source rect (natural-image coords)
+            loupeX - LOUPE_RADIUS, loupeY - LOUPE_RADIUS, LOUPE_DIAMETER, LOUPE_DIAMETER // dest rect
+        );
+
+        ctx.restore(); // removes clip
+
+        // ── Dark backdrop ring for edge definition ────────────────────────────
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+        ctx.lineWidth   = 6;
+        ctx.beginPath();
+        ctx.arc(loupeX, loupeY, LOUPE_RADIUS + 1, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+
+        // ── Cyan dashed border (matches ghost dot style) ─────────────────────
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0, 220, 255, 0.9)';
+        ctx.lineWidth   = 3;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.arc(loupeX, loupeY, LOUPE_RADIUS, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+
+        // ── Small filled centre dot – marks exact landing position ────────────
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 220, 255, 0.9)';
+        ctx.beginPath();
+        ctx.arc(loupeX, loupeY, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
     }
 
     // ============================================================
@@ -343,7 +436,8 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.setPointerCapture(e.pointerId); // Keep receiving events outside the canvas
         const pos = getPos(e);
 
-        ghostPoint = null; // Clear any stale ghost from a previous drag
+        ghostPoint  = null; // Clear any stale ghost from a previous drag
+        isTouchDrag = (e.pointerType === 'touch'); // Phase 3: track whether this is a touch drag
 
         // Look for an existing joint dot within the 25px grab radius.
         draggingPoint = points.find(p =>
@@ -398,6 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
             draggingPoint.y = ghostPoint.y;
         }
         ghostPoint    = null;
+        isTouchDrag   = false; // Phase 3: hide the loupe on release
         draggingPoint = null;
         draw();
     }
