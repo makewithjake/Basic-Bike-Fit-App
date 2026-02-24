@@ -92,13 +92,20 @@
                 window.parent.postMessage({ type: 'cycl3d-height', height: h }, '*');
             }
 
+            // Expose globally so script.js can call it explicitly after image
+            // loads and table population, when the resize happens asynchronously.
+            window.cycl3dSendHeight = sendHeight;
+
             // Send once as soon as the DOM is ready
             sendHeight();
 
-            // Re-send whenever the app content grows or shrinks
-            // (e.g. after a photo is uploaded, results appear, or the help modal opens)
+            // Re-send whenever the app content grows or shrinks.
+            // Wrapped in requestAnimationFrame so the height is read after the
+            // browser has finished laying out the new content.
             if (window.ResizeObserver) {
-                new ResizeObserver(sendHeight).observe(root);
+                new ResizeObserver(function () {
+                    requestAnimationFrame(sendHeight);
+                }).observe(root);
             }
         })();
     </script>

@@ -396,6 +396,11 @@ document.addEventListener('DOMContentLoaded', () => {
             </table>`;
 
         resultsArea.innerHTML = html;
+
+        // Tell the parent iframe to resize now that the results table is visible.
+        if (typeof window.cycl3dSendHeight === 'function') {
+            requestAnimationFrame(window.cycl3dSendHeight);
+        }
     }
 
     // ============================================================
@@ -527,6 +532,10 @@ document.addEventListener('DOMContentLoaded', () => {
             img.onload = () => {
                 img.style.display = 'block'; // Make the image visible once it has loaded
                 draw();
+                // Tell the parent iframe to resize now that the image is visible.
+                if (typeof window.cycl3dSendHeight === 'function') {
+                    requestAnimationFrame(window.cycl3dSendHeight);
+                }
             };
         };
         reader.readAsDataURL(file); // Encode the file as a base64 data URL string
@@ -553,6 +562,10 @@ document.addEventListener('DOMContentLoaded', () => {
             demoLoading       = false;
             img.style.display = 'block';
             draw();
+            // Tell the parent iframe to resize now that the demo image is visible.
+            if (typeof window.cycl3dSendHeight === 'function') {
+                requestAnimationFrame(window.cycl3dSendHeight);
+            }
         };
 
         img.onerror = () => {
