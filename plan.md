@@ -1,74 +1,32 @@
 # Cycl3D Bike Fit App – Change Plan
 
-## Part 1 – Replace Hardcoded Shopify CDN Links with Local Assets
+## Core Stack
+- Vanilla JS (ES2015+, strict mode) – no frameworks
+- HTML5 Canvas API – skeleton overlay + angle labels
+- jsPDF + jsPDF-AutoTable (CDN) – programmatic PDF export, no html2canvas
+- CSS3 custom properties – shared colour tokens across stylesheet
+- Browser localStorage – session save / restore
 
-**Files:** `index.html`, `script.js`
+## Current Focus
+- **Mobile compatibility** – touch targets too small, layout breaks on narrow viewports; needs responsive button grid, larger hit areas, and pinch-to-zoom safe canvas handling
+- **Bike type selector** – add Road / Gravel / MTB dropdown; each type carries its own ideal angle ranges (MTB upright geometry differs from road aero)
+- **Adjustment recommendations** – upgrade vague advice ("RAISE saddle height") to specific, actionable guidance (e.g. "Raise saddle ~5–10 mm") and tailor advice per bike type
 
-### 1a. `index.html` – Banner image src
-- Change `src="https://cdn.shopify.com/.../cycl3d_banner_...png"` → `src="Assets/cycl3d_banner.webp"`
+## Completed
+- [x] Photo upload (FileReader → base64 → `<img>`)
+- [x] Click-to-place + drag joint markers (7 points: Toe → Ankle → Knee → Hip → Shoulder → Elbow → Hand)
+- [x] Angle calculations: Knee, Back, Shoulder, Elbow, Ankle
+- [x] Riding style selector: Relaxed / Balanced / Aggressive
+- [x] Results table – measured angle, ideal range, corrective advice
+- [x] PDF report export – jsPDF direct (`addImage` + `autoTable`), no html2canvas
+- [x] Session save / restore (localStorage)
+- [x] Demo image loader
+- [x] Help modal
+- [x] Clear / reset (wipes markers, image, and localStorage)
 
-### 1b. `index.html` – Content Security Policy
-- Remove `https://cdn.shopify.com` from the `img-src` directive since no external image sources remain.
-- Result: `img-src 'self' data: blob:`
-
-### 1c. `script.js` – Demo image URL
-- Change `const DEMO_URL = 'https://cdn.shopify.com/.../Jake_bike_fit_demo.png...'`
-  → `const DEMO_URL = 'Assets/Jake_bike_fit_demo.png';`
-
-### 1d. `script.js` – Remove `crossOrigin` from `loadDemoImage()`
-- `img.crossOrigin = 'Anonymous'` is only needed for cross-origin images. Local assets do not require it and setting it unnecessarily can cause issues in some browsers.
-- Remove the attribute assignment and associated comment.
-- Update the `onerror` alert message to reflect that it is now loading a local file (remove "check your internet connection").
-
----
-
-## Part 2 – PDF Export Rebuilt from Scratch
-
-**File:** `script.js`
-
-The old implementation (`html2pdf().from(element).save()`) captured the raw DOM without the canvas overlay, producing a broken export. The entire handler is replaced.
-
-### New approach – programmatic canvas compositing + clean HTML template
-
-The new `pdfBtn` click handler is an `async` function that runs the following steps:
-
-#### Step 1 – Validate state
-- If no image is loaded, alert the user and abort. No point generating an empty report.
-
-#### Step 2 – Composite photo + skeleton overlay at full natural resolution
-- Create a temporary off-screen `<canvas>` sized to the photo's **natural** pixel dimensions (not display size).
-- `drawImage(img)` to paint the photo at full resolution.
-- Calculate scale factors: `scaleX = naturalWidth / clientWidth`, `scaleY = naturalHeight / clientHeight`.
-- Redraw skeleton lines, joint dots, and angle labels using those scale factors so every marker and label lands at exactly the same relative position as seen in the browser, but at full resolution.
-- Export to a JPEG data URL via `toDataURL('image/jpeg', 0.92)`.
-
-#### Step 3 – Embed the banner as a data URL
-- Draw `document.querySelector('.banner img')` onto a small temporary canvas.
-- Export to a PNG data URL. Wrapped in `try/catch` – if it fails for any reason, the banner is omitted gracefully.
-
-#### Step 4 – Build a self-contained HTML report string
-Construct a minimal HTML document containing:
-- Banner image (embedded as data URL)
-- Report title (`Cycl3D Basic Bike Fit Report`)
-- Riding style label
-- Composited bike-fit photo (`max-width: 100%`)
-- Measurements table (`resultsArea.innerHTML`)
-- Legal disclaimer
-- Inline CSS matching the app's brand colors, font styles, and table design
-
-#### Step 5 – Export via html2pdf with controlled settings
-```js
-{
-  margin:      [10, 10, 10, 10],       // mm – uniform margin on all sides
-  filename:    'Cycl3D_Bike_Fit_Report.pdf',
-  image:       { type: 'jpeg', quality: 0.95 },
-  html2canvas: { scale: 1, useCORS: true, logging: false },
-  jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
-  pagebreak:   { mode: 'avoid-all' }   // prevents table rows from being split across pages
-}
-```
-- `.from(reportHTML, 'string')` – html2pdf renders the self-contained HTML string, not the live DOM.
-
-#### Step 6 – Button state management
-- Button is disabled and label changed to `Generating…` for the duration of the export.
-- Restored to `Download PDF Report` in a `finally` block (runs whether export succeeds or fails).
+## Notes / Rules
+- No external JS frameworks – keep it vanilla
+- No html2canvas – PDF is built programmatically; angle logic must be duplicated in the PDF path (it cannot read from the live DOM)
+- CSP meta tag is enforced in `index.html` – any new CDN script needs a matching `integrity` hash
+- Bike type and riding style are **separate axes** – MTB + Aggressive is a valid combination; ranges are keyed `IDEAL_RANGES[joint][bikeType][ridingStyle]` e.g. `IDEAL_RANGES.Knee.MTB.Relaxed → [145, 155]`; Road and Gravel ranges sit closer together, MTB skews more upright across all styles
+- Touch events already have `passive: false` on `touchstart` / `touchmove` for drag support – preserve this when adding mobile layout changes
