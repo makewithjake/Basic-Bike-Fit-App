@@ -64,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // modification by other scripts on the page.
     let points        = [];    // Array of { x, y } joint marker positions (grows as user clicks)
     let draggingPoint = null;  // The specific point currently being dragged (null if none)
+    let ghostPoint    = null;  // Live drag-preview position – committed to points on pointerup
     let lastX         = 0;    // Last recorded pointer X position during drag
     let lastY         = 0;    // Last recorded pointer Y position during drag
     let demoLoading   = false; // Prevents multiple simultaneous demo image requests
@@ -177,6 +178,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Refresh the results table with the latest angle data.
         updateTable(angleData);
+
+        // ── Draw Ghost Dot (Phase 2 – drag preview) ──────────────────────────
+        // During a drag, ghostPoint holds the live pointer position but the real
+        // point in `points` stays frozen so all angle math remains stable.
+        // Rendered last so it always appears on top of skeleton lines and labels.
+        if (ghostPoint) {
+            ctx.save();
+            // Dashed cyan outline to distinguish the ghost from committed points.
+            ctx.strokeStyle = 'rgba(0, 220, 255, 0.9)';
+            ctx.lineWidth   = 3;
+            ctx.setLineDash([6, 4]);
+            ctx.beginPath();
+            ctx.arc(ghostPoint.x, ghostPoint.y, 12, 0, Math.PI * 2);
+            ctx.stroke();
+            // Semi-transparent fill so the photo is still visible underneath.
+            ctx.fillStyle = 'rgba(0, 220, 255, 0.35)';
+            ctx.fill();
+            ctx.restore();
+        }
     }
 
     // ============================================================
@@ -323,12 +343,15 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.setPointerCapture(e.pointerId); // Keep receiving events outside the canvas
         const pos = getPos(e);
 
+        ghostPoint = null; // Clear any stale ghost from a previous drag
+
         // Look for an existing joint dot within the 25px grab radius.
         draggingPoint = points.find(p =>
             Math.sqrt((p.x - pos.x) ** 2 + (p.y - pos.y) ** 2) < 25
         );
 
         // If no nearby dot was found and there is still room, create a new marker.
+        // The point is added at the tap position so the ghost can track from here.
         if (!draggingPoint && points.length < MAX_POINTS) {
             draggingPoint = { x: pos.x, y: pos.y };
             points.push(draggingPoint);
@@ -349,9 +372,12 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function handleMove(e) {
         if (!draggingPoint) return; // No active drag – nothing to do
-        const pos       = getPos(e);
-        draggingPoint.x = pos.x;
-        draggingPoint.y = pos.y;
+        const pos = getPos(e);
+        // Phase 2: write to ghostPoint instead of mutating the real point.
+        // This keeps `points` frozen during the drag so angle math in draw()
+        // always operates on the last committed state – preventing the
+        // stale-coordinate bug that affected points 5 & 6.
+        ghostPoint = { x: pos.x, y: pos.y };
         lastX = pos.x;
         lastY = pos.y;
         draw();
@@ -364,6 +390,14 @@ document.addEventListener('DOMContentLoaded', () => {
      * Clears the active drag reference so the next press starts fresh.
      */
     function handleEnd() {
+        // Phase 2: commit the ghost position into the real point before clearing.
+        // If the user only tapped (no move), ghostPoint is null – the point is
+        // already in its correct position from handleStart, so nothing extra needed.
+        if (draggingPoint && ghostPoint) {
+            draggingPoint.x = ghostPoint.x;
+            draggingPoint.y = ghostPoint.y;
+        }
+        ghostPoint    = null;
         draggingPoint = null;
         draw();
     }

@@ -4,7 +4,7 @@
 - [x] Method selected
 - [ ] Phase 1 – Method 2 (Pointer Events) implemented
 - [ ] Phase 1 – Method 2 tested
-- [ ] Phase 2 – Method 3 (Ghost Point) implemented
+- [x] Phase 2 – Method 3 (Ghost Point) implemented
 - [ ] Phase 2 – Method 3 tested
 
 ---
@@ -87,8 +87,8 @@ Method 1 is dropped — it solves the same coordinate drift problem as Method 2 
 - Add `canvas.setPointerCapture(e.pointerId)` on `pointerdown` so drag tracking continues if the finger leaves the canvas boundary
 
 **Acceptance criteria:**
-- [ ] Dragging any point on mobile is smooth and does not jump
-- [ ] No unwanted page scroll during a drag
+- [x] Dragging any point on mobile is smooth and does not jump
+- [x] No unwanted page scroll during a drag
 - [x] All 7 points place and drag correctly on desktop (regression check)
 - [x] PDF export unaffected
 
@@ -102,18 +102,18 @@ Method 1 is dropped — it solves the same coordinate drift problem as Method 2 
 - `handleEnd()` commits `ghostPoint` into `points` and clears the ghost
 
 **Acceptance criteria:**
-- [ ] Points 5 and 6 land exactly where the finger lifts
-- [ ] Ghost dot is clearly visible above the fingertip during drag
+- [x] Points 5 and 6 land exactly where the finger lifts
+- [x] Ghost dot is clearly visible above the fingertip during drag
 - [ ] No regression in angle calculations or PDF export
 
 ---
 
 ## Next Steps
 
-- [ ] Implement Phase 1 (Method 2)
-- [ ] Test Phase 1 on iOS Safari (most restrictive touch environment)
-- [ ] Test Phase 1 on Android Chrome
-- [ ] Confirm stable before starting Phase 2
-- [ ] Implement Phase 2 (Method 3)
+- [x] Implement Phase 1 (Method 2)
+- [x] Test Phase 1 on iOS Safari (most restrictive touch environment)
+- [x] Test Phase 1 on Android Chrome
+- [x] Confirm stable before starting Phase 2
+- [x] Implement Phase 2 (Method 3)
 - [ ] Verify points 5 and 6 placement is stable end-to-end
 - [ ] Update plan.md mobile section once both phases confirmed working
