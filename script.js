@@ -293,30 +293,34 @@ document.addEventListener('DOMContentLoaded', () => {
      * getPos(e)
      *
      * Extracts the pointer coordinates relative to the canvas element.
-     * Works for both mouse events (desktop) and touch events (mobile).
+     * Uses the Pointer Events API – e.clientX / e.clientY are always present
+     * for mouse, touch, and stylus events, with no per-frame getBoundingClientRect
+     * drift risk during a drag.
      *
-     * @param {MouseEvent|TouchEvent} e
+     * @param {PointerEvent} e
      * @returns {{ x: number, y: number }}
      */
     function getPos(e) {
-        const rect    = canvas.getBoundingClientRect(); // Canvas position on the screen
-        const pointer = e.touches ? e.touches[0] : e;  // Use first touch point, or mouse
+        const rect = canvas.getBoundingClientRect(); // Canvas position on the screen
         return {
-            x: pointer.clientX - rect.left,
-            y: pointer.clientY - rect.top
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
         };
     }
 
     /**
      * handleStart(e)
      *
-     * Called when the user presses down on the canvas (mousedown or touchstart).
+     * Called when the user presses down on the canvas (pointerdown).
+     * setPointerCapture ensures pointermove/pointerup continue firing even if
+     * the finger or cursor leaves the canvas boundary during a drag.
      *
      * If the pointer lands within 25px of an existing joint dot, that dot becomes
      * the active drag target. Otherwise, if fewer than MAX_POINTS exist, a new
      * joint marker is placed at the pointer position.
      */
     function handleStart(e) {
+        canvas.setPointerCapture(e.pointerId); // Keep receiving events outside the canvas
         const pos = getPos(e);
 
         // Look for an existing joint dot within the 25px grab radius.
@@ -338,13 +342,13 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * handleMove(e)
      *
-     * Called while the pointer moves (mousemove or touchmove).
+     * Called while the pointer moves (pointermove).
      * If a joint is being dragged, updates its position to follow the pointer.
-     * e.preventDefault() stops the page from scrolling on touch devices during a drag.
+     * Scroll suppression is handled automatically by `touch-action: none` on the
+     * canvas – no e.preventDefault() needed here.
      */
     function handleMove(e) {
         if (!draggingPoint) return; // No active drag – nothing to do
-        e.preventDefault();
         const pos       = getPos(e);
         draggingPoint.x = pos.x;
         draggingPoint.y = pos.y;
@@ -356,7 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * handleEnd()
      *
-     * Called when the pointer is released (mouseup or touchend).
+     * Called when the pointer is released (pointerup or pointercancel).
      * Clears the active drag reference so the next press starts fresh.
      */
     function handleEnd() {
@@ -368,18 +372,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // CANVAS EVENT LISTENERS
     // ============================================================
 
-    // Mouse events: press on the canvas, move anywhere on the window, release anywhere.
-    // Listening to mousemove/mouseup on the window (not just the canvas) means dragging
-    // still works even if the cursor moves outside the canvas boundary.
-    canvas.addEventListener('mousedown', handleStart);
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('mouseup',   handleEnd);
-
-    // Touch events: passive:false on touchstart and touchmove allows e.preventDefault()
-    // to call successfully, which blocks unwanted page scrolling during a drag.
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleStart(e); }, { passive: false });
-    canvas.addEventListener('touchmove',  handleMove, { passive: false });
-    canvas.addEventListener('touchend',   handleEnd);
+    // Unified Pointer Events API – handles mouse, touch, and stylus with a single
+    // set of listeners. setPointerCapture() (called in handleStart) ensures
+    // pointermove/pointerup fire even when the pointer leaves the canvas boundary,
+    // replacing the previous window-level mousemove/mouseup listeners.
+    // Scroll suppression is handled declaratively by `touch-action: none` in CSS,
+    // so no `passive: false` overrides are needed.
+    canvas.addEventListener('pointerdown',   handleStart);
+    canvas.addEventListener('pointermove',   handleMove);
+    canvas.addEventListener('pointerup',     handleEnd);
+    canvas.addEventListener('pointercancel', handleEnd);
 
     // ============================================================
     // IMAGE UPLOAD

@@ -75,6 +75,7 @@ canvas {
     top: 0;
     left: 0;
     z-index: 2;
+    touch-action: none; /* Required for Pointer Events API – browser handles scroll suppression */
 }
 
 img#displayImg {
