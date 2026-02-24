@@ -1,6 +1,23 @@
+/* ── Global Reset ───────────────────────────────────────────
+   box-sizing: border-box makes width/height predictable.
+   Padding and borders are included in the declared size,
+   not added on top of it. This is a modern CSS best practice. */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* CSS Custom Properties (shared colour values).
+   Change a colour here and it updates everywhere it appears. */
 :root {
-    --brand-green: #00ff00;
-    --brand-orange: #f39c12;
+    --brand-green:  #00ff00; /* Lime green  – skeleton canvas overlay        */
+    --brand-orange: #f39c12; /* Orange      – Help button                    */
+    --color-ok:     #28a745; /* Green       – angle within the ideal range   */
+    --color-warn:   #dc3545; /* Red         – angle outside the ideal range  */
+    --color-blue:   #007bff; /* Blue        – PDF download button            */
+    --color-teal:   #17a2b8; /* Teal        – Demo button                   */
+    --color-gray:   #6c757d; /* Gray        – Clear/Reset button             */
 }
 
 #cycl3d-app-root {
@@ -11,11 +28,38 @@
     padding: 20px 0;
 }
 
+/* The report wrapper holds everything captured in a PDF or print. */
 #report-wrapper {
     width: 100%;
     max-width: 850px;
     background: white;
     padding: 20px;
+}
+
+/* The no-print-zone contains UI controls (file upload, dropdown)
+   that should NOT appear when the user prints or exports a PDF.
+   These are hidden via the @media print rule at the bottom. */
+.no-print-zone {
+    display:        flex;
+    flex-direction: column;
+    gap:            8px;
+    width:          95%;
+    max-width:      850px;
+    margin-top:     16px;
+}
+
+.no-print-zone label {
+    font-weight: 600;
+    font-size:   0.95rem;
+}
+
+.no-print-zone select,
+.no-print-zone input[type="file"] {
+    padding:       8px;
+    border:        1px solid #ccc;
+    border-radius: 6px;
+    font-size:     0.95rem;
+    width:         100%;
 }
 
 #container {
@@ -52,8 +96,23 @@ th, td {
     text-align: left;
 }
 
-.status-ok { color: #28a745; font-weight: bold; }
-.status-warn { color: #dc3545; font-weight: bold; }
+/* Table header row: darker background for clear visual hierarchy. */
+th {
+    background-color: #f0f0f0;
+    font-weight: 700;
+}
+
+/* status-ok: angle is within the ideal range – shown in green. */
+.status-ok  { color: var(--color-ok);   font-weight: bold; }
+/* status-warn: angle is outside the ideal range – shown in red. */
+.status-warn { color: var(--color-warn); font-weight: bold; }
+
+/* advice-box: the recommendation cell in the results table. */
+.advice-box {
+    font-size:  0.9rem;
+    font-style: italic;
+    color:      #333;
+}
 
 .action-buttons {
     display: grid;
@@ -64,18 +123,29 @@ th, td {
     max-width: 850px;
 }
 
+/* Base button styles – width, padding, and appearance in one rule.
+   No duplicate declarations needed. All buttons inherit these. */
 button {
-    padding: 12px;
-    border: none;
+    width:         100%;
+    padding:       12px;
+    border:        none;
     border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
+    cursor:        pointer;
+    font-weight:   600;
+    font-size:     0.95rem;
+    transition:    opacity 0.15s ease; /* Subtle hover feedback */
 }
 
-button { width: 100%; }
+button:hover { opacity: 0.88; }
 
-.gray-btn { background: #6c757d; color: white; }
+/* Individual button colour themes using CSS variables. */
+.gray-btn { background: var(--color-gray);   color: white; }
+.pdf-btn  { background: var(--color-blue);   color: white; grid-column: span 3; }
+.save-btn { background: var(--color-ok);     color: white; }
+.help-btn { background: var(--brand-orange); color: white; }
+.demo-btn { background: var(--color-teal);   color: white; }
 
+/* The Clear/Reset button spans all 3 grid columns. */
 #clearBtn { grid-column: span 3; }
 
 .banner img {
@@ -95,24 +165,65 @@ button { width: 100%; }
     font-size: 1.1rem;
 }
 
-.pdf-btn { background: #007bff; color: white; grid-column: span 3; }
-.save-btn { background: #28a745; color: white; }
-.help-btn { background: var(--brand-orange); color: white; }
-.demo-btn { background: #17a2b8; color: white; }
-
+/* Help modal: full-screen overlay with usage instructions.
+   Hidden by default; shown when the user clicks the Help button. */
 #help-modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
+    display:    none;               /* Hidden until Help button is clicked   */
+    position:   fixed;              /* Covers the full viewport              */
+    z-index:    1000;               /* Floats above all other page content   */
     left: 0; top: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8);
+    background: rgba(0, 0, 0, 0.8); /* Semi-transparent dark backdrop        */
 }
 
+/* The white card that holds the instruction text. */
 .modal-content {
-    background: white;
-    margin: 15% auto;
-    padding: 20px;
-    width: 80%;
-    max-width: 500px;
+    background:    white;
+    margin:        10% auto;
+    padding:       24px;
+    width:         80%;
+    max-width:     500px;
     border-radius: 12px;
+    position:      relative; /* Allows absolute positioning of the close button */
+}
+
+/* The x close button in the top-right corner of the modal. */
+.close {
+    position:    absolute;
+    top:         12px;
+    right:       16px;
+    font-size:   1.5rem;
+    font-weight: bold;
+    cursor:      pointer;
+    color:       #555;
+    line-height: 1;
+}
+
+.close:hover { color: #000; }
+
+/* Legal disclaimer at the bottom of the report.
+   Light yellow background with an orange accent strip. */
+.disclaimer {
+    margin-top:    20px;
+    padding:       12px 16px;
+    background:    #fff8e1;
+    border-left:   4px solid var(--brand-orange);
+    border-radius: 4px;
+    font-size:     0.82rem;
+    color:         #555;
+    line-height:   1.5;
+}
+
+/* Print / PDF Media Query ─────────────────────────────────
+   When printing or generating a PDF, hide all interactive
+   controls so only the report content is captured.        */
+@media print {
+    .no-print-zone,
+    .action-buttons {
+        display: none !important;
+    }
+
+    #report-wrapper {
+        max-width: 100%;
+        padding:   0;
+    }
 }

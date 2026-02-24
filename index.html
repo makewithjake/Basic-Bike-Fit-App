@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Content Security Policy: restricts which external resources can load, helping prevent XSS attacks -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self'; img-src 'self' https://cdn.shopify.com data: blob:; base-uri 'self'; form-action 'none'; object-src 'none'">
+    <!-- Page description shown in search engine results -->
+    <meta name="description" content="Cycl3D Basic Bike Fit Tool – Upload a side-view photo and get instant angle analysis and fit recommendations for your riding style.">
     <title>Cycl3D Basic Bike Fit Tool</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha384-Yv5O+t3uE3hunW8uyrbpPW3iw6/5/Y7HitWJBLgqfMoA36NogMmy+8wWZMpn3HWc" crossorigin="anonymous"></script>
@@ -17,8 +20,10 @@
             </div>
 
             <div id="container">
-                <img id="displayImg" src="" alt="">
-                <canvas id="skeletonCanvas"></canvas>
+                <!-- The uploaded bike photo. aria-hidden hides it from screen readers since it is purely visual -->
+                <img id="displayImg" src="" alt="" aria-hidden="true">
+                <!-- The overlay canvas where joint dots and skeleton lines are drawn on top of the photo -->
+                <canvas id="skeletonCanvas" aria-label="Bike fit skeleton overlay canvas"></canvas>
             </div>
 
             <div id="results-area"></div>
@@ -28,11 +33,12 @@
             </div>
         </div>
 
-            <div class="no-print-zone">
-            <label>1. Upload Side-View Photo:</label>
-            <input type="file" id="upload" accept="image/*">
-            <label>2. Select Riding Style:</label>
-            <select id="fitType">
+        <!-- no-print-zone: this section is hidden when printing or generating a PDF report -->
+        <div class="no-print-zone">
+            <label for="upload">1. Upload Side-View Photo:</label>
+            <input type="file" id="upload" accept="image/*" aria-label="Upload a side-view photo of yourself on your bike">
+            <label for="fitType">2. Select Riding Style:</label>
+            <select id="fitType" aria-label="Select your riding style">
                 <option value="Relaxed">Relaxed (Comfort)</option>
                 <option value="Balanced" selected>Balanced (All-Road)</option>
                 <option value="Aggressive">Aggressive (Race/Aero)</option>
