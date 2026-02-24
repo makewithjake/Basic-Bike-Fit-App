@@ -57,7 +57,7 @@ th, td {
 
 .action-buttons {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 10px;
     margin-top: 20px;
     width: 95%;
@@ -76,7 +76,7 @@ button { width: 100%; }
 
 .gray-btn { background: #6c757d; color: white; }
 
-#clearBtn { grid-column: span 2; }
+#clearBtn { grid-column: span 3; }
 
 .banner img {
     width: 100%;
@@ -95,9 +95,10 @@ button { width: 100%; }
     font-size: 1.1rem;
 }
 
-.pdf-btn { background: #007bff; color: white; grid-column: span 2; }
+.pdf-btn { background: #007bff; color: white; grid-column: span 3; }
 .save-btn { background: #28a745; color: white; }
 .help-btn { background: var(--brand-orange); color: white; }
+.demo-btn { background: #17a2b8; color: white; }
 
 #help-modal {
     display: none;

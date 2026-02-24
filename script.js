@@ -174,6 +174,32 @@ document.getElementById('upload').onchange = (e) => {
     reader.readAsDataURL(e.target.files[0]);
 };
 
+// Demo image loader (loads the provided demo URL like a user upload)
+const demoUrl = 'https://cdn.shopify.com/s/files/1/0726/2555/3664/files/Jake_bike_fit_demo.png?v=1771896154';
+let demoLoading = false;
+function loadDemoImage(url, clearMarkers = false) {
+    if (demoLoading) return;
+    demoLoading = true;
+    try {
+        img.crossOrigin = 'Anonymous';
+    } catch (err) {
+        // ignore if not supported
+    }
+    img.onload = () => {
+        demoLoading = false;
+        draw();
+    };
+    img.onerror = () => {
+        demoLoading = false;
+        console.warn('Demo image failed to load:', url);
+        alert('Failed to load demo image.');
+    };
+    if (clearMarkers) points = [];
+    img.src = url;
+}
+
+document.getElementById('demoBtn').onclick = () => loadDemoImage(demoUrl, false);
+
 document.getElementById('clearBtn').onclick = () => { points = []; draw(); };
 fitTypeSelect.onchange = draw;
 
