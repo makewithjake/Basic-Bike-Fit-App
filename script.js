@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let demoLoading   = false; // Prevents multiple simultaneous demo image requests
 
     // ── Demo Image URL ────────────────────────────────────────────────────────
-    const DEMO_URL = 'https://cdn.shopify.com/s/files/1/0726/2555/3664/files/Jake_bike_fit_demo.png?v=1771896154';
+    const DEMO_URL = 'Assets/Jake_bike_fit_demo.png';
 
     // ============================================================
     // DRAWING
@@ -418,11 +418,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (demoLoading) return; // Guard against duplicate simultaneous requests
         demoLoading = true;
 
-        // crossOrigin = 'Anonymous' is required for canvas drawing operations on
-        // images hosted on external domains (e.g. the Shopify CDN). Without this,
-        // the browser blocks canvas access to the pixel data for security reasons.
-        img.crossOrigin = 'Anonymous';
-
         img.onload = () => {
             demoLoading       = false;
             img.style.display = 'block';
@@ -432,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
         img.onerror = () => {
             demoLoading = false;
             console.warn('Demo image failed to load:', url);
-            alert('Failed to load the demo image. Please check your internet connection.');
+            alert('Failed to load the demo image. Please ensure the Assets folder is present.');
         };
 
         if (clearMarkers) points = []; // Optionally wipe existing joint markers
@@ -481,11 +476,176 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('help-modal').style.display = 'none'
     );
 
-    // PDF Export: uses the html2pdf.js library loaded in the <head>.
-    // Only the content inside #report-wrapper is captured in the generated PDF.
-    document.getElementById('pdfBtn').addEventListener('click', () => {
-        const element = document.getElementById('report-wrapper');
-        html2pdf().from(element).save('Cycl3D_Report.pdf');
+    // PDF Export – rebuilt from scratch.
+    // Composites the photo + skeleton overlay into a single off-screen canvas at full
+    // natural resolution, embeds the banner and measurements table into a self-contained
+    // HTML string, then exports via html2pdf on a single A4 page.
+    document.getElementById('pdfBtn').addEventListener('click', async () => {
+
+        // Guard: require a loaded photo before exporting.
+        if (!img.src || img.style.display === 'none' || !img.naturalWidth) {
+            alert('Please upload a photo before exporting. Place joint markers to include measurements.');
+            return;
+        }
+
+        const pdfBtn       = document.getElementById('pdfBtn');
+        pdfBtn.disabled    = true;
+        pdfBtn.textContent = 'Generating\u2026';
+        let staging = null; // declared here so finally{} can always clean it up
+        try {
+            // ── Step 1: Composite photo + skeleton overlay at full natural resolution ──
+            const naturalW = img.naturalWidth;
+            const naturalH = img.naturalHeight;
+            const displayW = img.clientWidth;
+            const displayH = img.clientHeight;
+
+            // Scale factors map display-space marker coordinates to natural-image pixels.
+            const scaleX = naturalW / displayW;
+            const scaleY = naturalH / displayH;
+
+            const offCanvas  = document.createElement('canvas');
+            offCanvas.width  = naturalW;
+            offCanvas.height = naturalH;
+            const offCtx     = offCanvas.getContext('2d');
+
+            // Paint the photo at full resolution.
+            offCtx.drawImage(img, 0, 0, naturalW, naturalH);
+
+            // Skeleton lines
+            if (points.length >= 2) {
+                offCtx.strokeStyle = COLOR_SKEL;
+                offCtx.lineWidth   = 4 * scaleX;
+                offCtx.lineJoin    = 'round';
+                offCtx.beginPath();
+                offCtx.moveTo(points[0].x * scaleX, points[0].y * scaleY);
+                points.forEach(p => offCtx.lineTo(p.x * scaleX, p.y * scaleY));
+                offCtx.stroke();
+            }
+
+            // Joint dots and angle labels, scaled to match their browser positions.
+            points.forEach((p, i) => {
+                const sx = p.x * scaleX;
+                const sy = p.y * scaleY;
+
+                offCtx.fillStyle = COLOR_SKEL;
+                offCtx.beginPath();
+                offCtx.arc(sx, sy, 8 * scaleX, 0, Math.PI * 2);
+                offCtx.fill();
+
+                let angle = null;
+                let name  = '';
+
+                if (i === 1 && points[2]) { name = 'Ankle';    angle = calcAngle(points[0], points[1], points[2]); }
+                if (i === 2 && points[3]) { name = 'Knee';     angle = calcAngle(points[1], points[2], points[3]); }
+                if (i === 3 && points[4]) {
+                    name  = 'Back';
+                    angle = Math.abs(
+                        Math.atan2(points[4].y - points[3].y, points[4].x - points[3].x) * (180 / Math.PI)
+                    );
+                }
+                if (i === 4 && points[5]) { name = 'Shoulder'; angle = calcAngle(points[3], points[4], points[5]); }
+                if (i === 5 && points[6]) { name = 'Elbow';    angle = Math.abs(180 - calcAngle(points[4], points[5], points[6])); }
+
+                if (angle !== null) {
+                    const range = IDEAL_RANGES[name][fitTypeSelect.value];
+                    const isOk  = (angle >= range[0] && angle <= range[1]);
+                    offCtx.fillStyle = isOk ? COLOR_GOOD : COLOR_WARN;
+                    offCtx.font      = `bold ${Math.round(16 * scaleX)}px Arial`;
+                    offCtx.fillText(`${name}: ${angle.toFixed(1)}\u00b0`, sx + 15 * scaleX, sy - 15 * scaleY);
+                }
+            });
+
+            const compositeDataURL = offCanvas.toDataURL('image/jpeg', 0.92);
+
+            // ── Step 2: Embed banner as a data URL ───────────────────────────────────
+            const bannerImgEl = document.querySelector('.banner img');
+            let bannerDataURL = '';
+            try {
+                const bc    = document.createElement('canvas');
+                bc.width    = bannerImgEl.naturalWidth  || bannerImgEl.width;
+                bc.height   = bannerImgEl.naturalHeight || bannerImgEl.height;
+                bc.getContext('2d').drawImage(bannerImgEl, 0, 0);
+                bannerDataURL = bc.toDataURL('image/png');
+            } catch (e) {
+                console.warn('Banner image could not be embedded in PDF:', e);
+            }
+
+            // ── Step 3: Build report as a hidden off-screen DOM element ─────────────
+            // html2canvas requires a real, mounted DOM node to render correctly.
+            // Passing a full HTML document string via .from(str,'string') is unreliable
+            // because the <!DOCTYPE>/<html> wrapper becomes malformed when set via
+            // innerHTML, producing a blank canvas. We create a plain <div> instead,
+            // inject only the body content, and attach it just outside the viewport
+            // so html2canvas can measure and paint it, then remove it after export.
+            const tableHTML = resultsArea.innerHTML || '';
+            const fitLabel  = fitTypeSelect.value;
+
+            staging = document.createElement('div');
+            // Must be positioned inside the viewport (top:0, left:0) or html2canvas
+            // renders a blank frame. Near-zero opacity + z-index:-9999 keeps it
+            // invisible to the user without taking it out of the render area.
+            staging.style.cssText = [
+                'position:fixed',
+                'top:0',
+                'left:0',
+                'width:794px',
+                'background:#fff',
+                'color:#111',
+                'font-family:Arial,sans-serif',
+                'padding:16px',
+                'box-sizing:border-box',
+                'z-index:-9999',
+                'opacity:0.01',
+                'pointer-events:none'
+            ].join(';');
+
+            staging.innerHTML = `
+<style>
+  .pdf-banner{text-align:center;margin-bottom:10px}
+  .pdf-banner img{max-width:100%;height:auto;display:block;margin:0 auto}
+  .pdf-title{text-align:center;font-size:18px;font-weight:bold;margin:8px 0 4px}
+  .pdf-fit-label{text-align:center;font-size:13px;color:#555;margin-bottom:12px}
+  .pdf-photo{text-align:center;margin-bottom:14px}
+  .pdf-photo img{max-width:100%;height:auto;display:block;margin:0 auto}
+  .pdf-staging table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px}
+  .pdf-staging th{background:#222;color:#fff;padding:7px 9px;text-align:left}
+  .pdf-staging td{padding:6px 9px;border-bottom:1px solid #ddd}
+  .pdf-staging tr:nth-child(even) td{background:#f7f7f7}
+  .status-ok{color:#28a745;font-weight:bold}
+  .status-warn{color:#dc3545;font-weight:bold}
+  .advice-box{font-style:italic}
+  .pdf-disclaimer{font-size:10px;color:#999;border-top:1px solid #eee;padding-top:8px;margin-top:8px}
+</style>
+<div class="pdf-banner">${bannerDataURL ? `<img src="${bannerDataURL}" alt="Cycl3D Banner">` : ''}</div>
+<div class="pdf-title">Cycl3D Basic Bike Fit Report</div>
+<div class="pdf-fit-label">Riding Style: <strong>${fitLabel}</strong></div>
+<div class="pdf-photo"><img src="${compositeDataURL}" alt="Bike Fit Analysis"></div>
+${tableHTML}
+<p class="pdf-disclaimer"><strong>Legal Disclaimer:</strong> This tool is provided for informational and educational purposes only. Make with Jake LLC and Cycl3D assume no liability for injuries or mechanical failures resulting from use of this application. This software-generated analysis is based on 2D imagery and does not replace the comprehensive assessment of a certified professional bike fitter.</p>`;
+
+            staging.classList.add('pdf-staging');
+            document.body.appendChild(staging);
+
+            // ── Step 4: Export via html2pdf ──────────────────────────────────────────
+            const opt = {
+                margin:      [10, 10, 10, 10],
+                filename:    'Cycl3D_Bike_Fit_Report.pdf',
+                image:       { type: 'jpeg', quality: 0.95 },
+                html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff', windowWidth: 794, scrollX: 0, scrollY: 0 },
+                jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
+                pagebreak:   { mode: 'avoid-all' }
+            };
+
+            await html2pdf().set(opt).from(staging).save();
+
+        } catch (err) {
+            console.error('PDF export failed:', err);
+            alert('PDF export failed. Please try again.');
+        } finally {
+            if (staging && staging.parentNode) staging.parentNode.removeChild(staging);
+            pdfBtn.disabled    = false;
+            pdfBtn.textContent = 'Download PDF Report';
+        }
     });
 
     // Save Session: stores the current joint marker positions in browser localStorage
