@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Tell the parent iframe to resize now that the results table is visible.
         if (typeof window.cycl3dSendHeight === 'function') {
-            requestAnimationFrame(window.cycl3dSendHeight);
+            requestAnimationFrame(() => requestAnimationFrame(window.cycl3dSendHeight));
         }
     }
 
@@ -534,7 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 draw();
                 // Tell the parent iframe to resize now that the image is visible.
                 if (typeof window.cycl3dSendHeight === 'function') {
-                    requestAnimationFrame(window.cycl3dSendHeight);
+                    requestAnimationFrame(() => requestAnimationFrame(window.cycl3dSendHeight));
                 }
             };
         };
@@ -564,7 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
             draw();
             // Tell the parent iframe to resize now that the demo image is visible.
             if (typeof window.cycl3dSendHeight === 'function') {
-                requestAnimationFrame(window.cycl3dSendHeight);
+                requestAnimationFrame(() => requestAnimationFrame(window.cycl3dSendHeight));
             }
         };
 
