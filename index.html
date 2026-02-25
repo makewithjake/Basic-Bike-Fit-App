@@ -88,23 +88,33 @@
             if (!root) return;
 
             function sendHeight() {
-                var h = document.documentElement.scrollHeight;
+                // Measure the root flex container — its scrollHeight always
+                // reflects the true content height, unaffected by any overflow
+                // or height constraint on <html>/<body>.
+                var h = root.scrollHeight;
                 window.parent.postMessage({ type: 'cycl3d-height', height: h }, '*');
+            }
+
+            // Double-rAF: read height after both layout and paint have settled.
+            function scheduleHeight() {
+                requestAnimationFrame(function () {
+                    requestAnimationFrame(sendHeight);
+                });
             }
 
             // Expose globally so script.js can call it explicitly after image
             // loads and table population, when the resize happens asynchronously.
-            window.cycl3dSendHeight = sendHeight;
+            window.cycl3dSendHeight = scheduleHeight;
 
-            // Send once as soon as the DOM is ready
-            sendHeight();
+            // Send once when the DOM is ready (fast path) and again after all
+            // assets have loaded so fonts/images are included in the measurement.
+            document.addEventListener('DOMContentLoaded', scheduleHeight);
+            window.addEventListener('load', scheduleHeight);
 
             // Re-send whenever the app content grows or shrinks.
-            // Wrapped in requestAnimationFrame so the height is read after the
-            // browser has finished laying out the new content.
             if (window.ResizeObserver) {
                 new ResizeObserver(function () {
-                    requestAnimationFrame(sendHeight);
+                    scheduleHeight();
                 }).observe(root);
             }
         })();
