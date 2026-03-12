@@ -141,7 +141,6 @@ button:hover { opacity: 0.88; }
 /* Individual button colour themes using CSS variables. */
 .gray-btn { background: var(--color-gray);   color: white; }
 .pdf-btn  { background: var(--color-blue);   color: white; grid-column: span 3; }
-.save-btn { background: var(--color-ok);     color: white; }
 .help-btn { background: var(--brand-orange); color: white; }
 .demo-btn { background: var(--color-teal);   color: white; }
 
@@ -211,6 +210,41 @@ button:hover { opacity: 0.88; }
     font-size:     0.82rem;
     color:         #555;
     line-height:   1.5;
+}
+
+/* Session title and notes fields inside #report-wrapper.
+   Wrapped in .no-print-zone so they are hidden during print/PDF. */
+.fit-title-wrap,
+.fit-notes-wrap {
+    margin-top: 14px;
+}
+
+.fit-title-wrap label,
+.fit-notes-wrap label {
+    display:      block;
+    font-weight:  600;
+    font-size:    0.95rem;
+    margin-bottom: 4px;
+}
+
+#fitTitle,
+#fitNotes {
+    width:         100%;
+    padding:       8px 10px;
+    border:        1px solid #ccc;
+    border-radius: 6px;
+    font-size:     0.95rem;
+    font-family:   inherit;
+    color:         #333;
+    background:    #fafafa;
+    resize:        vertical;
+}
+
+#fitTitle:focus,
+#fitNotes:focus {
+    outline:      none;
+    border-color: var(--brand-orange);
+    background:   #fff;
 }
 
 /* Print / PDF Media Query ─────────────────────────────────

@@ -8,8 +8,8 @@
 - Browser localStorage – session save / restore
 
 ## Current Focus
-- **Bike type selector** – add Road / Gravel / MTB dropdown; each type carries its own ideal angle ranges (MTB upright geometry differs from road aero)
-- **Adjustment recommendations** – upgrade vague advice ("RAISE saddle height") to specific, actionable guidance (e.g. "Raise saddle ~5–10 mm") and tailor advice per bike type
+- **Remove Save Button** - Current version of save button is not useful. Remove the button and all associated code.
+- **Notes** - Add fields for Title and Notes input. Easier to reference in the future. Title box should be located above the photo.  Notes should be listed below the table. The PDF export tool needs to include both of these new fields.
 
 ## Completed
 - [x] Photo upload (FileReader → base64 → `<img>`)

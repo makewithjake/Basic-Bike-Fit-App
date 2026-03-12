@@ -596,9 +596,6 @@ document.addEventListener('DOMContentLoaded', () => {
         img.src               = '';
         img.style.display     = 'none';
 
-        // Remove the previously saved session from browser storage (safe to fail silently).
-        try { localStorage.removeItem('cycl3d_save'); } catch (e) { /* ignore */ }
-
         // Reset the file input field so the same file can be re-uploaded if needed.
         const uploadInput = document.getElementById('upload');
         if (uploadInput) uploadInput.value = '';
@@ -783,6 +780,15 @@ document.addEventListener('DOMContentLoaded', () => {
             doc.text('Cycl3D Basic Bike Fit Report', pageW / 2, cursorY, { align: 'center' });
             cursorY += 7;
 
+            // Session title (if provided by the user)
+            const fitTitleVal = document.getElementById('fitTitle').value.trim();
+            if (fitTitleVal) {
+                doc.setFontSize(13);
+                doc.setFont('helvetica', 'normal');
+                doc.text(fitTitleVal, pageW / 2, cursorY, { align: 'center' });
+                cursorY += 6;
+            }
+
             // Riding style label
             doc.setFontSize(11);
             doc.setFont('helvetica', 'normal');
@@ -814,6 +820,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 cursorY = doc.lastAutoTable.finalY + 8;
             }
 
+            // Notes section (if provided by the user)
+            const fitNotesVal = document.getElementById('fitNotes').value.trim();
+            if (fitNotesVal) {
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(0);
+                doc.text('Notes:', margin, cursorY);
+                cursorY += 5;
+                doc.setFont('helvetica', 'normal');
+                const notesLines = doc.splitTextToSize(fitNotesVal, contentW);
+                doc.text(notesLines, margin, cursorY);
+                cursorY += notesLines.length * 5 + 6;
+            }
+
             // Legal disclaimer
             doc.setFontSize(8);
             doc.setFont('helvetica', 'normal');
@@ -831,19 +851,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             pdfBtn.disabled    = false;
             pdfBtn.textContent = 'Download PDF Report';
-        }
-    });
-
-    // Save Session: stores the current joint marker positions in browser localStorage
-    // so the layout is preserved if the user closes and reopens the page.
-    document.getElementById('saveBtn').addEventListener('click', () => {
-        try {
-            localStorage.setItem('cycl3d_save', JSON.stringify(points));
-            alert('Session saved to your browser!');
-        } catch (e) {
-            // localStorage can fail if the user has disabled it or storage is full.
-            console.error('Could not save session:', e);
-            alert('Unable to save session. Your browser storage may be full or disabled.');
         }
     });
 

@@ -20,6 +20,11 @@
                 <h2>Cycl3D Basic Bike Fit Tool</h2>
             </div>
 
+            <div class="no-print-zone fit-title-wrap">
+                <label for="fitTitle">Session Title</label>
+                <input type="text" id="fitTitle" placeholder="Session title (optional)">
+            </div>
+
             <div id="container">
                 <!-- The uploaded bike photo. aria-hidden hides it from screen readers since it is purely visual -->
                 <img id="displayImg" src="" alt="" aria-hidden="true">
@@ -28,6 +33,11 @@
             </div>
 
             <div id="results-area"></div>
+
+            <div class="no-print-zone fit-notes-wrap">
+                <label for="fitNotes">Notes</label>
+                <textarea id="fitNotes" rows="4" placeholder="Notes (optional)"></textarea>
+            </div>
 
             <div class="disclaimer">
                 <strong>Legal Disclaimer:</strong> This tool is provided for informational and educational purposes only. Make with Jake LLC and Cycl3D assume no liability for injuries or mechanical failures resulting from use of this application. This software-generated analysis is based on 2D imagery and does not replace the comprehensive assessment of a certified professional bike fitter.
@@ -50,7 +60,7 @@
             <button type="button" id="clearBtn" class="gray-btn">Clear Canvas & Reset</button>
             <button type="button" class="help-btn" id="helpBtn">Help</button>
             <button type="button" class="demo-btn" id="demoBtn">Demo Image</button>
-            <button type="button" class="save-btn" id="saveBtn">Save Session</button>
+
             <button type="button" class="pdf-btn" id="pdfBtn">Download PDF Report</button>
         </div>
 
@@ -64,8 +74,7 @@
                 <p>4. Starting with the Toe, click on the center of each joint (Ankle, Knee, Hip, Shoulder, Elbow, Hand).</p>
                 <p>5. Click and drag each joint to adjust its position</p>
                 <p>6. Review the calculated angles and recommendations in the results area.</p>
-                <p>7. Use the "Save Session" button to save your current fit data to local storage</p>
-                <p>8. Click "Download PDF Report" to generate a PDF summary of your bike fit analysis.</p>
+                <p>7. Click "Download PDF Report" to generate a PDF summary of your bike fit analysis.</p>
                 <button type="button" id="closeHelpBtn">Got it!</button>
             </div>
         </div>
