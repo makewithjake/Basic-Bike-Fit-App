@@ -8,8 +8,7 @@
 - Browser localStorage – session save / restore
 
 ## Current Focus
-- **Remove Save Button** - Current version of save button is not useful. Remove the button and all associated code.
-- **Notes** - Add fields for Title and Notes input. Easier to reference in the future. Title box should be located above the photo.  Notes should be listed below the table. The PDF export tool needs to include both of these new fields.
+- **Mobile Improvements** - Width and length of the app dont display well in mobile.  Table expads to wider than the mobile screen.  Everything should ALWAYS collapse to fit screen width.
 
 ## Completed
 - [x] Photo upload (FileReader → base64 → `<img>`)
@@ -25,6 +24,8 @@
 - [x] Mobile Phase 1 – Pointer Events API (`pointerdown/move/up`, `touch-action: none`); stable drag coordinates on iOS & Android
 - [x] Mobile Phase 2 – Ghost Point pattern; points 5 & 6 placement race condition resolved
 - [x] Mobile Phase 3 – Drag Loupe; magnified canvas crop above finger during touch drag, clamped to canvas bounds (all phases tested on iOS Safari & Android Chrome)
+- [x] Removed save button
+- [x] Added Notes fields
 
 ## Notes / Rules
 - No external JS frameworks – keep it vanilla
