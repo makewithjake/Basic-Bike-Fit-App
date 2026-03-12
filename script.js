@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let demoLoading   = false; // Prevents multiple simultaneous demo image requests
 
     // ── Demo Image URL ────────────────────────────────────────────────────────
-    const DEMO_URL = 'Assets/Jake_bike_fit_demo.png';
+    const DEMO_URL = 'Assets/Bike_fit_demo_image.png';
 
     // ============================================================
     // DRAWING

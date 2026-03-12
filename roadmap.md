@@ -4,7 +4,7 @@
 - **Data Verification** - update angles to match recomendations from bike fit book.
 - **Demo Photo Update** - Update Demo photo to include Jake using ROCKER FEET!!! 
 - **Bike type selector** – add Road / Gravel dropdown; each type carries its own ideal angle ranges (MTB upright geometry differs from road aero)
-- **Mobile Improvements** - Width and length of the app dont display well in mobile.  Table expads to wider than the mobile screen.  Everything should ALWAYS collapse to fit screen width.
+
 
 ## Idea List
 - **Sources and References** - Include a sources and references window so users can continue further research
@@ -14,7 +14,6 @@
 - **Default Point Cloud** - add points automatically.  User can then just click and drag as needed, might be easier to understand the workflow.  This could be a button as well.  Populate Points (Generic)
 - **Better Magnification** - currently, uses blue circle to locate point. consider adding magnifying glass/loupe to desktop version as well as mobile?
 - **Help Window** - open help window on load, or immediately after uploading photo?  Easy way to "force" user to read it and understand the process before continuing
-
 - **Triathalon Fit** - Add angles and/or fit rec for tri bikes. 
 
 ## Pie in the Sky List
