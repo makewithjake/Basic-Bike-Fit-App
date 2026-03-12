@@ -140,7 +140,7 @@ button:hover { opacity: 0.88; }
 
 /* Individual button colour themes using CSS variables. */
 .gray-btn { background: var(--color-gray);   color: white; }
-.pdf-btn  { background: var(--color-blue);   color: white; grid-column: span 3; }
+.pdf-btn  { background: var(--color-blue);   color: white; }
 .help-btn { background: var(--brand-orange); color: white; }
 .demo-btn { background: var(--color-teal);   color: white; }
 
@@ -279,8 +279,7 @@ body {
         grid-template-columns: 1fr 1fr;
     }
 
-    #clearBtn,
-    .pdf-btn {
+    #clearBtn {
         grid-column: span 2;
     }
 }

@@ -8,8 +8,7 @@
 - Browser localStorage – session save / restore
 
 ## Current Focus
-- **move pdf button** - Move pdf button up so that it is next to the demo button, all 3 buttons side by side
-- **clear update** - clear image & reset should clear the title and notes fields
+- (nothing pending)
 
 ## Completed
 - [x] Photo upload (FileReader → base64 → `<img>`)
@@ -28,6 +27,8 @@
 - [x] Removed save button
 - [x] Added Notes fields
 - [x] Mobile Phase 4 – Responsive layout; table wrapped in horizontal scroll container; `body` overflow-x guarded; mobile media query tightens padding, forces text wrap, and collapses action-buttons to 2-column grid
+- [x] Move PDF button – sits inline with Help & Demo (all 3 side by side on one row; Clear still spans full width)
+- [x] Clear update – Clear Canvas & Reset now also wipes the session title and notes fields
 
 ## Notes / Rules
 - No external JS frameworks – keep it vanilla

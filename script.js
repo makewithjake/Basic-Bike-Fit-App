@@ -602,6 +602,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const uploadInput = document.getElementById('upload');
         if (uploadInput) uploadInput.value = '';
 
+        // Clear the session title and notes fields.
+        const fitTitle = document.getElementById('fitTitle');
+        const fitNotes = document.getElementById('fitNotes');
+        if (fitTitle) fitTitle.value = '';
+        if (fitNotes) fitNotes.value = '';
+
         draw();
     });
 
