@@ -69,9 +69,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastX         = 0;    // Last recorded pointer X position during drag
     let lastY         = 0;    // Last recorded pointer Y position during drag
     let demoLoading   = false; // Prevents multiple simultaneous demo image requests
+    let isHelpImage   = false; // True while the help placeholder is shown (not a real fit photo)
 
     // ── Demo Image URL ────────────────────────────────────────────────────────
     const DEMO_URL = 'Assets/Bike_fit_demo_image.png';
+
+    // ── Help Screenshot URL ───────────────────────────────────────────────────
+    // Shown in the image area on first load so users understand what to do.
+    // Replaced by any real photo (upload or Demo Image) and restored on Clear.
+    const HELP_URL = 'Assets/help_screenshot.png';
 
     // ============================================================
     // DRAWING
@@ -443,6 +449,9 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.setPointerCapture(e.pointerId); // Keep receiving events outside the canvas
         const pos = getPos(e);
 
+        // Do not place or drag markers while the help placeholder is displayed.
+        if (isHelpImage) return;
+
         ghostPoint  = null; // Clear any stale ghost from a previous drag
         isTouchDrag = (e.pointerType === 'touch'); // Phase 3: track whether this is a touch drag
 
@@ -528,6 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const file = e.target.files[0];
         if (!file) return; // User closed the file dialog without selecting anything
 
+        isHelpImage = false; // User has provided a real photo – dismiss the help placeholder
         const reader  = new FileReader(); // Browser built-in API for reading local files
         reader.onload = (event) => {
             img.src    = event.target.result; // Assign the base64-encoded image data as the src
@@ -559,6 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadDemoImage(url, clearMarkers) {
         if (demoLoading) return; // Guard against duplicate simultaneous requests
         demoLoading = true;
+        isHelpImage = false; // Demo image is a real fit photo, not the help placeholder
 
         img.onload = () => {
             demoLoading       = false;
@@ -583,6 +594,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
     // BUTTON ACTIONS
     // ============================================================
+
+    // ============================================================
+    // HELP IMAGE LOADER
+    // ============================================================
+
+    /**
+     * loadHelpImage()
+     *
+     * Loads the help screenshot into the photo display area without clearing
+     * any existing markers (there should be none). Sets isHelpImage = true so
+     * the rest of the app knows this is a placeholder, not a real fit photo.
+     * Called on first load and after Clear.
+     */
+    function loadHelpImage() {
+        isHelpImage       = true;
+        img.onload = () => {
+            img.style.display = 'block';
+            draw();
+            if (typeof window.cycl3dSendHeight === 'function') {
+                requestAnimationFrame(() => requestAnimationFrame(window.cycl3dSendHeight));
+            }
+        };
+        img.onerror = () => {
+            // If the help screenshot is missing just leave the canvas blank.
+            isHelpImage       = false;
+            img.style.display = 'none';
+            console.warn('Help screenshot not found:', HELP_URL);
+        };
+        img.src = HELP_URL;
+    }
 
     // Demo: loads the built-in sample image. Existing markers are kept so users
     // can immediately see what positioned markers look like.
@@ -609,6 +650,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (fitNotes) fitNotes.value = '';
 
         draw();
+
+        // Restore the help placeholder so the canvas is never left blank.
+        loadHelpImage();
     });
 
     // Redraw the canvas whenever the riding style changes (new angle ranges apply).
@@ -632,8 +676,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // rendering is involved there are zero blank-page failure modes.
     document.getElementById('pdfBtn').addEventListener('click', async () => {
 
-        // Guard: require a loaded photo before exporting.
-        if (!img.src || img.style.display === 'none' || !img.naturalWidth) {
+        // Guard: require a real loaded photo before exporting.
+        if (!img.src || img.style.display === 'none' || !img.naturalWidth || isHelpImage) {
             alert('Please upload a photo before exporting. Place joint markers to include measurements.');
             return;
         }
@@ -861,5 +905,10 @@ document.addEventListener('DOMContentLoaded', () => {
             pdfBtn.textContent = 'Download PDF Report';
         }
     });
+
+    // ── Initial Help Image ────────────────────────────────────────────────────
+    // Show the help screenshot in the image area on first load so the canvas is
+    // never blank and new users immediately understand what to do.
+    loadHelpImage();
 
 }); // End of DOMContentLoaded – all code above runs only after the page is ready.

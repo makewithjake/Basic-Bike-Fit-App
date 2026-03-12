@@ -8,7 +8,7 @@
 - Browser localStorage – session save / restore
 
 ## Current Focus
-- (nothing pending)
+-**help screen update** - instead of displaying help_screenshot.png, display the help text in this area until user uploads a photo or loads the demo image.
 
 ## Completed
 - [x] Photo upload (FileReader → base64 → `<img>`)
@@ -29,6 +29,7 @@
 - [x] Mobile Phase 4 – Responsive layout; table wrapped in horizontal scroll container; `body` overflow-x guarded; mobile media query tightens padding, forces text wrap, and collapses action-buttons to 2-column grid
 - [x] Move PDF button – sits inline with Help & Demo (all 3 side by side on one row; Clear still spans full width)
 - [x] Clear update – Clear Canvas & Reset now also wipes the session title and notes fields
+- [x] Load help – `Assets/help_screenshot.png` is shown in the image area on first load; replaced by any uploaded photo or Demo Image; restored by Clear; `isHelpImage` flag prevents marker placement and PDF export on the placeholder
 
 ## Notes / Rules
 - No external JS frameworks – keep it vanilla
