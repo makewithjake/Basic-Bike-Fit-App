@@ -366,6 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // All values here come from internal calculations, not from user text input,
         // so using innerHTML is safe in this context.
         let html = `
+            <div class="table-scroll-wrap">
             <table>
                 <thead>
                     <tr>
@@ -393,7 +394,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         html += `
                 </tbody>
-            </table>`;
+            </table>
+            </div>`;
 
         resultsArea.innerHTML = html;
 

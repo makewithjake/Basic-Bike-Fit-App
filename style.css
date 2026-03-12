@@ -247,6 +247,44 @@ button:hover { opacity: 0.88; }
     background:   #fff;
 }
 
+/* ── Mobile Responsive Fixes ───────────────────────────────
+   Scroll wrapper for the results table – allows horizontal
+   scroll on narrow screens without breaking page layout.  */
+.table-scroll-wrap {
+    width:                    100%;
+    overflow-x:               auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent the page itself from ever scrolling horizontally. */
+body {
+    overflow-x: hidden;
+    max-width:  100vw;
+}
+
+/* Tighten layout and ensure text wraps on phones. */
+@media (max-width: 600px) {
+    #report-wrapper {
+        padding: 10px;
+    }
+
+    th, td {
+        padding:         8px 6px;
+        word-break:      break-word;
+        overflow-wrap:   break-word;
+    }
+
+    /* Stack action buttons into 2 columns on small screens. */
+    .action-buttons {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    #clearBtn,
+    .pdf-btn {
+        grid-column: span 2;
+    }
+}
+
 /* Print / PDF Media Query ─────────────────────────────────
    When printing or generating a PDF, hide all interactive
    controls so only the report content is captured.        */

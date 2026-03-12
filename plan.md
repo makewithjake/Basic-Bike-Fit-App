@@ -8,7 +8,8 @@
 - Browser localStorage – session save / restore
 
 ## Current Focus
-- **Mobile Improvements** - Width and length of the app dont display well in mobile.  Table expads to wider than the mobile screen.  Everything should ALWAYS collapse to fit screen width.
+- **move pdf button** - Move pdf button up so that it is next to the demo button, all 3 buttons side by side
+- **clear update** - clear image & reset should clear the title and notes fields
 
 ## Completed
 - [x] Photo upload (FileReader → base64 → `<img>`)
@@ -26,6 +27,7 @@
 - [x] Mobile Phase 3 – Drag Loupe; magnified canvas crop above finger during touch drag, clamped to canvas bounds (all phases tested on iOS Safari & Android Chrome)
 - [x] Removed save button
 - [x] Added Notes fields
+- [x] Mobile Phase 4 – Responsive layout; table wrapped in horizontal scroll container; `body` overflow-x guarded; mobile media query tightens padding, forces text wrap, and collapses action-buttons to 2-column grid
 
 ## Notes / Rules
 - No external JS frameworks – keep it vanilla
