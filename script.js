@@ -77,7 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Help Screenshot URL ───────────────────────────────────────────────────
     // Shown in the image area on first load so users understand what to do.
     // Replaced by any real photo (upload or Demo Image) and restored on Clear.
-    const HELP_URL = 'Assets/help_screenshot.png';
+    // replaced with gif file
+    const HELP_URL = 'Assets/bikefitpreview.gif';
 
     // ============================================================
     // DRAWING

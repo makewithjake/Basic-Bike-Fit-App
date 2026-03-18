@@ -4,6 +4,9 @@
 - **Data Verification** - update angles to match recomendations from bike fit book.
 - **Demo Photo Update** - Update Demo photo to include Jake using ROCKER FEET!!! 
 - **Bike type selector** – add Road / Gravel dropdown; each type carries its own ideal angle ranges (MTB upright geometry differs from road aero)
+- **Better Magnification** - currently, uses blue circle to locate point. consider adding magnifying glass/loupe to desktop version as well as mobile?
+- **Move Mag Glass** - move mag glass to lower right corner of image for all plateforms will always be easy to see.
+- **Add Theory and Sources Link** - Button opens up window with some basic fit theory and info, plus links to applicable books (amazon affiliate?)
 
 
 ## Idea List
@@ -12,7 +15,7 @@
 - **Heel Dot** - add a heel dot, move "toe" dot to the cleat location.  Allows better estimation of foot angle and cleat position impact.
 - **Adjustment Slider** - offer an adjustment slider for various contact points. ie seat position, use slider to move hip joint up or down, which in turn affects the knee and back angles. Will need to "lock" the length/distance between points when doing this. Adjustment sliders: Seat (hip points)(up/down), Bar (hand point)(up/down), Stem (hand point)(shorter/longer), Crank (cleat position)(Shorter/longer), Seat (hip point)(forward/back)
 - **Default Point Cloud** - add points automatically.  User can then just click and drag as needed, might be easier to understand the workflow.  This could be a button as well.  Populate Points (Generic)
-- **Better Magnification** - currently, uses blue circle to locate point. consider adding magnifying glass/loupe to desktop version as well as mobile?
+
 - **Help Window** - open help window on load, or immediately after uploading photo?  Easy way to "force" user to read it and understand the process before continuing
 - **Triathalon Fit** - Add angles and/or fit rec for tri bikes. 
 
@@ -28,3 +31,14 @@
 - **Flexibility Analysis** - Photo or video of user performing certain actions so we can analize and make a decision on how to increase flexibility/what to focus on
 
 ## Where Ideas go to die - Items that Im not going to implement but dont want to forget
+
+## Completed Items (removed from plan.md)
+- [x] Session save / restore (localStorage)
+- [x] Demo image loader
+- [x] Help modal
+- [x] Photo upload (FileReader → base64 → `<img>`)
+- [x] Click-to-place + drag joint markers (7 points: Toe → Ankle → Knee → Hip → Shoulder → Elbow → Hand)
+- [x] Angle calculations: Knee, Back, Shoulder, Elbow, Ankle
+- [x] Riding style selector: Relaxed / Balanced / Aggressive
+- [x] Results table – measured angle, ideal range, corrective advice
+- [x] Added Notes fields

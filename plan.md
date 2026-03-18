@@ -8,24 +8,17 @@
 - Browser localStorage – session save / restore
 
 ## Current Focus
--**help screen update** - instead of displaying help_screenshot.png, display the help text in this area until user uploads a photo or loads the demo image.
+- **Better Magnification** - currently, uses blue circle to locate point. consider adding magnifying glass/loupe to desktop version as well as mobile?
+- **Move Mag Glass** - move mag glass to lower right corner of image for all plateforms will always be easy to see.
+- **Add Theory and Sources Link** - Button opens up window with some basic fit theory and info, plus links to applicable books (amazon affiliate?)
 
 ## Completed
-- [x] Photo upload (FileReader → base64 → `<img>`)
-- [x] Click-to-place + drag joint markers (7 points: Toe → Ankle → Knee → Hip → Shoulder → Elbow → Hand)
-- [x] Angle calculations: Knee, Back, Shoulder, Elbow, Ankle
-- [x] Riding style selector: Relaxed / Balanced / Aggressive
-- [x] Results table – measured angle, ideal range, corrective advice
+
 - [x] PDF report export – jsPDF direct (`addImage` + `autoTable`), no html2canvas
-- [x] Session save / restore (localStorage)
-- [x] Demo image loader
-- [x] Help modal
 - [x] Clear / reset (wipes markers, image, and localStorage)
 - [x] Mobile Phase 1 – Pointer Events API (`pointerdown/move/up`, `touch-action: none`); stable drag coordinates on iOS & Android
 - [x] Mobile Phase 2 – Ghost Point pattern; points 5 & 6 placement race condition resolved
 - [x] Mobile Phase 3 – Drag Loupe; magnified canvas crop above finger during touch drag, clamped to canvas bounds (all phases tested on iOS Safari & Android Chrome)
-- [x] Removed save button
-- [x] Added Notes fields
 - [x] Mobile Phase 4 – Responsive layout; table wrapped in horizontal scroll container; `body` overflow-x guarded; mobile media query tightens padding, forces text wrap, and collapses action-buttons to 2-column grid
 - [x] Move PDF button – sits inline with Help & Demo (all 3 side by side on one row; Clear still spans full width)
 - [x] Clear update – Clear Canvas & Reset now also wipes the session title and notes fields
