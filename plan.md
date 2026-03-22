@@ -8,9 +8,8 @@
 - Browser localStorage – session save / restore
 
 ## Current Focus
-- **Better Magnification** - currently, uses blue circle to locate point. consider adding magnifying glass/loupe to desktop version as well as mobile?
-- **Move Mag Glass** - move mag glass to lower right corner of image for all plateforms will always be easy to see.
 - **Add Theory and Sources Link** - Button opens up window with some basic fit theory and info, plus links to applicable books (amazon affiliate?)
+- **Sources and References** - Include a sources and references window so users can continue further research
 
 ## Completed
 
@@ -23,6 +22,7 @@
 - [x] Move PDF button – sits inline with Help & Demo (all 3 side by side on one row; Clear still spans full width)
 - [x] Clear update – Clear Canvas & Reset now also wipes the session title and notes fields
 - [x] Load help – `Assets/help_screenshot.png` is shown in the image area on first load; replaced by any uploaded photo or Demo Image; restored by Clear; `isHelpImage` flag prevents marker placement and PDF export on the placeholder
+- [x] Added magnification loupe to desktop as well as mobile. Loupe is pinned to lower right corner on all platforms
 
 ## Notes / Rules
 - No external JS frameworks – keep it vanilla

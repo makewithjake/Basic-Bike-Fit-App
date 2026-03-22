@@ -65,7 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let points        = [];    // Array of { x, y } joint marker positions (grows as user clicks)
     let draggingPoint = null;  // The specific point currently being dragged (null if none)
     let ghostPoint    = null;  // Live drag-preview position – committed to points on pointerup
-    let isTouchDrag   = false; // True only while a touch-pointer drag is active (Phase 3 loupe)
     let lastX         = 0;    // Last recorded pointer X position during drag
     let lastY         = 0;    // Last recorded pointer Y position during drag
     let demoLoading   = false; // Prevents multiple simultaneous demo image requests
@@ -206,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.restore();
         }
 
-        // Phase 3: draw the drag loupe for touch interactions.
+        // Phase 3: draw the drag loupe (all pointer types).
         drawLoupe();
     }
 
@@ -217,11 +216,11 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * drawLoupe()
      *
-     * Renders a circular magnifying loupe above the user's finger during a
-     * touch drag so the exact placement position is always visible.
+     * Renders a circular magnifying loupe in the lower-right corner of the
+     * canvas during any drag (touch or mouse) so the exact placement position
+     * is always visible without obscuring the area being worked on.
      *
      * Only active when:
-     *   - isTouchDrag is true  (pointer type was 'touch')
      *   - ghostPoint is set    (a drag is in progress)
      *   - the photo is loaded  (img.naturalWidth > 0)
      *
@@ -230,21 +229,20 @@ document.addEventListener('DOMContentLoaded', () => {
      * and the final placement are identical by construction.
      */
     function drawLoupe() {
-        // ── Early exit on desktop / no drag / no image ───────────────────────
-        if (!ghostPoint || !isTouchDrag || !img.naturalWidth) return;
+        // ── Early exit when no drag or no image ──────────────────────────────
+        if (!ghostPoint || !img.naturalWidth) return;
 
-        const LOUPE_RADIUS    = 60;  // Display radius of the loupe circle (px)
+        // Responsive radius: shrinks on narrow canvases (< 480 px wide).
+        const LOUPE_RADIUS    = Math.min(75, canvas.width * 0.15);
         const LOUPE_DIAMETER  = LOUPE_RADIUS * 2;
         const MAGNIFICATION   = 1.5;
         // Radius of the canvas-space window that the loupe shows.
-        const SRC_RADIUS      = LOUPE_RADIUS / MAGNIFICATION; // 40px canvas-space
+        const SRC_RADIUS      = LOUPE_RADIUS / MAGNIFICATION;
 
-        // ── Loupe centre position (clamped to stay inside the canvas) ────────
-        const rawLoupeX = ghostPoint.x;
-        const rawLoupeY = ghostPoint.y - 150; // Default: 150px above the finger
-
-        const loupeX = Math.max(LOUPE_RADIUS + 10, Math.min(canvas.width  - LOUPE_RADIUS - 10, rawLoupeX));
-        const loupeY = Math.max(LOUPE_RADIUS + 10, rawLoupeY);
+        // ── Fixed lower-right anchor ─────────────────────────────────────────
+        const MARGIN = 15;
+        const loupeX = canvas.width  - LOUPE_RADIUS - MARGIN;
+        const loupeY = canvas.height - LOUPE_RADIUS - MARGIN;
 
         // ── Map canvas-space ghost position to natural-image pixels ──────────
         const scaleX = img.naturalWidth  / canvas.width;
@@ -454,8 +452,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isHelpImage) return;
 
         ghostPoint  = null; // Clear any stale ghost from a previous drag
-        isTouchDrag = (e.pointerType === 'touch'); // Phase 3: track whether this is a touch drag
-
         // Look for an existing joint dot within the 25px grab radius.
         draggingPoint = points.find(p =>
             Math.sqrt((p.x - pos.x) ** 2 + (p.y - pos.y) ** 2) < 25
@@ -509,7 +505,6 @@ document.addEventListener('DOMContentLoaded', () => {
             draggingPoint.y = ghostPoint.y;
         }
         ghostPoint    = null;
-        isTouchDrag   = false; // Phase 3: hide the loupe on release
         draggingPoint = null;
         draw();
     }

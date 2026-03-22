@@ -4,13 +4,12 @@
 - **Data Verification** - update angles to match recomendations from bike fit book.
 - **Demo Photo Update** - Update Demo photo to include Jake using ROCKER FEET!!! 
 - **Bike type selector** – add Road / Gravel dropdown; each type carries its own ideal angle ranges (MTB upright geometry differs from road aero)
-- **Better Magnification** - currently, uses blue circle to locate point. consider adding magnifying glass/loupe to desktop version as well as mobile?
-- **Move Mag Glass** - move mag glass to lower right corner of image for all plateforms will always be easy to see.
-- **Add Theory and Sources Link** - Button opens up window with some basic fit theory and info, plus links to applicable books (amazon affiliate?)
+- **Make Angles easier to see** - add some angle graphics to show where the angle is referanced with a "pie" type visual.  Add some masking behind the text so that it is easier to read.
+- **App scale is slightly big on desktop when loaded direct from github page** - on desktop, lots of scrolling up and down the page to see the banner, photo, and table.  is there a better way to manage this? (embedded version seems fine, this ONLY happens when opening the app directly)
 
 
 ## Idea List
-- **Sources and References** - Include a sources and references window so users can continue further research
+
 - **Custom Angle Range** - All user a "custom" option where they can input specific angle ranges for custom fit. Maybe they want to copy the fit of an old bike to a new bike, or already have an idea of how they want the fit to look.
 - **Heel Dot** - add a heel dot, move "toe" dot to the cleat location.  Allows better estimation of foot angle and cleat position impact.
 - **Adjustment Slider** - offer an adjustment slider for various contact points. ie seat position, use slider to move hip joint up or down, which in turn affects the knee and back angles. Will need to "lock" the length/distance between points when doing this. Adjustment sliders: Seat (hip points)(up/down), Bar (hand point)(up/down), Stem (hand point)(shorter/longer), Crank (cleat position)(Shorter/longer), Seat (hip point)(forward/back)
