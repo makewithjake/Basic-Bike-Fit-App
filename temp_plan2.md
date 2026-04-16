@@ -25,9 +25,9 @@ Target layout after this change:
 
 ### 1. Button – `index.html`
 
-- Add `<button type="button" id="moreBtn">More</button>` as the **last child** inside `.action-buttons`, immediately after `#pdfBtn`.
+- Add `<button type="button" id="moreBtn" class="more-btn">More</button>` as the **last child** inside `.action-buttons`, immediately after `#pdfBtn`.
 - No structural changes to the row are needed; the existing flex layout will push the new button to the right end naturally.
-- Give it a distinct class (e.g. `more-btn`) so it can be styled independently.
+- Give it a distinct class (`more-btn`) so it can be styled independently.
 
 ### 2. Styling the Button – `style.css`
 

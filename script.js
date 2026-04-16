@@ -80,6 +80,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const HELP_URL = 'Assets/bikefitpreview.gif';
 
     // ============================================================
+    // DRAWING HELPERS
+    // ============================================================
+
+    /**
+     * drawAngleArc(ctx, vertex, pA, pB, color)
+     *
+     * Draws a translucent pie-wedge sector between the two skeleton rays at a
+     * joint vertex so it is visually clear which opening the angle refers to.
+     *
+     * Always draws the shorter (interior) arc between the two direction vectors.
+     */
+    function drawAngleArc(ctx, vertex, pA, pB, color) {
+        const ARC_RADIUS = 30;
+        const aA = Math.atan2(pA.y - vertex.y, pA.x - vertex.x);
+        const aB = Math.atan2(pB.y - vertex.y, pB.x - vertex.x);
+
+        // Normalise delta to (-π, π] so we always sweep the shorter arc.
+        let delta = aB - aA;
+        while (delta >  Math.PI) delta -= 2 * Math.PI;
+        while (delta < -Math.PI) delta += 2 * Math.PI;
+        const anticlockwise = delta < 0;
+
+        ctx.save();
+
+        // Translucent filled sector.
+        ctx.globalAlpha = 0.25;
+        ctx.fillStyle   = color;
+        ctx.beginPath();
+        ctx.moveTo(vertex.x, vertex.y);
+        ctx.arc(vertex.x, vertex.y, ARC_RADIUS, aA, aB, anticlockwise);
+        ctx.closePath();
+        ctx.fill();
+
+        // Stroke along the curved edge only (no spokes) at higher opacity.
+        ctx.globalAlpha  = 0.85;
+        ctx.strokeStyle  = color;
+        ctx.lineWidth    = 2;
+        ctx.beginPath();
+        ctx.arc(vertex.x, vertex.y, ARC_RADIUS, aA, aB, anticlockwise);
+        ctx.stroke();
+
+        ctx.restore();
+    }
+
+    // ============================================================
     // DRAWING
     // ============================================================
 
@@ -134,35 +179,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Each angle is calculated at a MIDDLE point using the point before and after it.
             // We check that the next required point actually exists before calculating.
-            let angle = null; // Stays null if this point is not a middle joint
-            let name  = '';
+            let angle  = null; // Stays null if this point is not a middle joint
+            let name   = '';
+            let pA_arc = null; // Arc endpoint A (toward the "before" limb segment)
+            let pB_arc = null; // Arc endpoint B (toward the "after" limb segment)
 
             if (i === 1 && points[2]) {
-                name  = 'Ankle';
-                angle = calcAngle(points[0], points[1], points[2]);
+                name   = 'Ankle';
+                angle  = calcAngle(points[0], points[1], points[2]);
+                pA_arc = points[0];
+                pB_arc = points[2];
             }
             if (i === 2 && points[3]) {
-                name  = 'Knee';
-                angle = calcAngle(points[1], points[2], points[3]);
+                name   = 'Knee';
+                angle  = calcAngle(points[1], points[2], points[3]);
+                pA_arc = points[1];
+                pB_arc = points[3];
             }
             if (i === 3 && points[4]) {
                 name  = 'Back';
                 // The back angle is measured against the horizontal plane,
                 // not as a three-point joint flex. Math.atan2 returns the
                 // angle of the torso line (hip-to-shoulder) from horizontal.
-                angle = Math.abs(
+                angle  = Math.abs(
                     Math.atan2(points[4].y - points[3].y, points[4].x - points[3].x) * (180 / Math.PI)
                 );
+                // Synthetic horizontal reference point so the arc matches what is measured.
+                pA_arc = { x: points[3].x + 60, y: points[3].y };
+                pB_arc = points[4];
             }
             if (i === 4 && points[5]) {
-                name  = 'Shoulder';
-                angle = calcAngle(points[3], points[4], points[5]);
+                name   = 'Shoulder';
+                angle  = calcAngle(points[3], points[4], points[5]);
+                pA_arc = points[3];
+                pB_arc = points[5];
             }
             if (i === 5 && points[6]) {
                 name  = 'Elbow';
                 // Elbow flexion is expressed as degrees of bend.
                 // 180° = fully straight arm. We subtract from 180 to get the bend amount.
-                angle = Math.abs(180 - calcAngle(points[4], points[5], points[6]));
+                angle  = Math.abs(180 - calcAngle(points[4], points[5], points[6]));
+                pA_arc = points[4];
+                pB_arc = points[6];
             }
 
             // Only render a label if an angle was actually calculated at this point.
@@ -172,11 +230,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 const range   = IDEAL_RANGES[name][fitTypeSelect.value];
                 const isOk    = (angle >= range[0] && angle <= range[1]);
                 const display = angle.toFixed(1); // Format to one decimal for display only
+                const color   = isOk ? COLOR_GOOD : COLOR_WARN;
 
-                // Draw a colour-coded angle label next to the joint dot on the canvas.
-                ctx.fillStyle = isOk ? COLOR_GOOD : COLOR_WARN;
+                // 1. Arc wedge – drawn first so skeleton lines and dots overlay it.
+                drawAngleArc(ctx, p, pA_arc, pB_arc, color);
+
+                // 2. Translucent pill background behind the label text.
+                ctx.font = 'bold 16px Arial';
+                const labelText = `${name}: ${display}°`;
+                const PAD_X     = 6;
+                const PAD_Y     = 4;
+                const fontSize  = 16;
+                const labelX    = p.x + 15;
+                const labelY    = p.y - 15;
+                const textWidth = ctx.measureText(labelText).width;
+                const rectLeft  = labelX - PAD_X;
+                const rectTop   = labelY - fontSize - PAD_Y;
+                const rectW     = textWidth + PAD_X * 2;
+                const rectH     = fontSize + PAD_Y * 2;
+
+                ctx.save();
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+                if (ctx.roundRect) {
+                    ctx.beginPath();
+                    ctx.roundRect(rectLeft, rectTop, rectW, rectH, 4);
+                    ctx.fill();
+                } else {
+                    ctx.fillRect(rectLeft, rectTop, rectW, rectH);
+                }
+                ctx.restore();
+
+                // 3. Colour-coded label text on top of the pill.
+                ctx.fillStyle = color;
                 ctx.font      = 'bold 16px Arial';
-                ctx.fillText(`${name}: ${display}°`, p.x + 15, p.y - 15);
+                ctx.fillText(labelText, labelX, labelY);
 
                 // Collect this joint's data for the results table.
                 angleData.push({ name, angle, display, isOk, range });
@@ -900,6 +987,19 @@ document.addEventListener('DOMContentLoaded', () => {
             pdfBtn.disabled    = false;
             pdfBtn.textContent = 'Download PDF Report';
         }
+    });
+
+    // ── "More" Modal ──────────────────────────────────────────────────────────
+    const moreModal = document.getElementById('moreModal');
+
+    document.getElementById('moreBtn').addEventListener('click', () =>
+        moreModal.removeAttribute('hidden'));
+
+    document.getElementById('moreModalClose').addEventListener('click', () =>
+        moreModal.setAttribute('hidden', ''));
+
+    moreModal.addEventListener('click', e => {
+        if (e.target === moreModal) moreModal.setAttribute('hidden', '');
     });
 
     // ── Initial Help Image ────────────────────────────────────────────────────

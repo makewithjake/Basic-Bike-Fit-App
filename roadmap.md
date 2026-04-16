@@ -4,7 +4,7 @@
 - **Data Verification** - update angles to match recomendations from bike fit book.
 - **Demo Photo Update** - Update Demo photo to include Jake using ROCKER FEET!!! 
 - **Bike type selector** – add Road / Gravel dropdown; each type carries its own ideal angle ranges (MTB upright geometry differs from road aero)
-- **Make Angles easier to see** - add some angle graphics to show where the angle is referanced with a "pie" type visual.  Add some masking behind the text so that it is easier to read.
+
 - **App scale is slightly big on desktop when loaded direct from github page** - on desktop, lots of scrolling up and down the page to see the banner, photo, and table.  is there a better way to manage this? (embedded version seems fine, this ONLY happens when opening the app directly)
 
 
@@ -41,3 +41,5 @@
 - [x] Riding style selector: Relaxed / Balanced / Aggressive
 - [x] Results table – measured angle, ideal range, corrective advice
 - [x] Added Notes fields
+- **Add Theory and Sources Link** - Button opens up window with some basic fit theory and info, plus links to applicable books (amazon affiliate?)
+- **Make Angles easier to see** - add some angle graphics to show where the angle is referanced with a "pie" type visual.  Add some masking behind the text so that it is easier to read.

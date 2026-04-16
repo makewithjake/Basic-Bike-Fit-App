@@ -18,6 +18,7 @@
     --color-blue:   #007bff; /* Blue        – PDF download button            */
     --color-teal:   #17a2b8; /* Teal        – Demo button                   */
     --color-gray:   #6c757d; /* Gray        – Clear/Reset button             */
+    --color-slate:  #607d8b; /* Slate blue  – More button                   */
 }
 
 #cycl3d-app-root {
@@ -116,7 +117,7 @@ th {
 
 .action-buttons {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
     gap: 10px;
     margin-top: 20px;
     width: 95%;
@@ -139,13 +140,14 @@ button {
 button:hover { opacity: 0.88; }
 
 /* Individual button colour themes using CSS variables. */
-.gray-btn { background: var(--color-gray);   color: white; }
-.pdf-btn  { background: var(--color-blue);   color: white; }
-.help-btn { background: var(--brand-orange); color: white; }
-.demo-btn { background: var(--color-teal);   color: white; }
+.gray-btn  { background: var(--color-gray);   color: white; }
+.pdf-btn   { background: var(--color-blue);   color: white; }
+.help-btn  { background: var(--brand-orange); color: white; }
+.demo-btn  { background: var(--color-teal);   color: white; }
+.more-btn  { background: var(--color-slate);  color: white; }
 
-/* The Clear/Reset button spans all 3 grid columns. */
-#clearBtn { grid-column: span 3; }
+/* The Clear/Reset button spans all 4 grid columns. */
+#clearBtn { grid-column: span 4; }
 
 .banner img {
     width: 100%;
@@ -198,6 +200,122 @@ button:hover { opacity: 0.88; }
 }
 
 .close:hover { color: #000; }
+
+/* ── "More" Modal – fit theory & resources ─────────────────────────────────
+   Full-screen overlay with a scrollable card. Toggled via the `hidden`
+   attribute; the higher-specificity [hidden] rule ensures display: none
+   wins over the display: flex declared on .modal-overlay.               */
+.modal-overlay {
+    position:        fixed;
+    inset:           0;
+    background:      rgba(0, 0, 0, 0.55);
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    z-index:         1000;
+}
+
+.modal-overlay[hidden] {
+    display: none;
+}
+
+.modal-box {
+    background:    white;
+    border-radius: 10px;
+    padding:       24px;
+    max-width:     640px;
+    width:         90%;
+    max-height:    85vh;
+    overflow-y:    auto;
+    box-shadow:    0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.modal-header {
+    display:         flex;
+    justify-content: space-between;
+    align-items:     center;
+    margin-bottom:   16px;
+}
+
+.modal-header h2 {
+    margin:    0;
+    font-size: 1.25rem;
+}
+
+/* Close (✕) button – plain icon, no background fill. */
+#moreModalClose {
+    background:  none;
+    border:      none;
+    font-size:   1.25rem;
+    cursor:      pointer;
+    color:       #555;
+    padding:     4px 8px;
+    line-height: 1;
+    width:       auto;
+}
+
+#moreModalClose:hover {
+    color:   #000;
+    opacity: 1;
+}
+
+.theory-text p {
+    line-height: 1.6;
+    margin:      0 0 12px;
+    color:       #333;
+}
+
+.theory-resources {
+    display:    flex;
+    flex-wrap:  wrap;
+    gap:        16px;
+    margin-top: 24px;
+}
+
+.book-card {
+    display:         flex;
+    flex-direction:  column;
+    align-items:     center;
+    width:           120px;
+    text-align:      center;
+    text-decoration: none;
+    color:           inherit;
+    gap:             8px;
+    transition:      transform 0.15s ease;
+}
+
+.book-card:hover {
+    transform: translateY(-3px);
+}
+
+/* CSS gradient placeholder that mimics a book cover thumbnail. */
+.book-cover {
+    width:        100%;
+    aspect-ratio: 2 / 3;
+    border-radius: 4px;
+    box-shadow:   0 2px 8px rgba(0, 0, 0, 0.3);
+    background-size: cover;
+    background-position: center;
+}
+
+.book-cover-bikefit {
+    background-image: url('Assets/bikefitphilburt.jpg');
+}
+
+.book-cover-ctb {
+    background-image: url('Assets/cycliststrainingbible.jpg');
+}
+
+.book-title {
+    font-weight: 600;
+    font-size:   0.85rem;
+    line-height: 1.3;
+}
+
+.book-author {
+    font-size: 0.78rem;
+    color:     #666;
+}
 
 /* Legal disclaimer at the bottom of the report.
    Light yellow background with an orange accent strip. */
@@ -274,7 +392,8 @@ body {
         overflow-wrap:   break-word;
     }
 
-    /* Stack action buttons into 2 columns on small screens. */
+    /* Stack action buttons into 2 columns on small screens.
+       The 4 action buttons (Help, Demo, PDF, More) flow into 2×2 naturally. */
     .action-buttons {
         grid-template-columns: 1fr 1fr;
     }

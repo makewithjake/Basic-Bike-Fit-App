@@ -8,8 +8,7 @@
 - Browser localStorage – session save / restore
 
 ## Current Focus
-- **Add Theory and Sources Link** - Button opens up window with some basic fit theory and info, plus links to applicable books (amazon affiliate?)
-- **Sources and References** - Include a sources and references window so users can continue further research
+
 
 ## Completed
 

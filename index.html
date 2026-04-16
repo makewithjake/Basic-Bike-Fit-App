@@ -59,6 +59,7 @@
             <button type="button" class="help-btn" id="helpBtn">Help</button>
             <button type="button" class="demo-btn" id="demoBtn">Demo Image</button>
             <button type="button" class="pdf-btn" id="pdfBtn">Download PDF Report</button>
+            <button type="button" id="moreBtn" class="more-btn">More</button>
         </div>
 
         <div id="help-modal">
@@ -73,6 +74,34 @@
                 <p>6. Review the calculated angles and recommendations in the results area.</p>
                 <p>7. Click "Download PDF Report" to generate a PDF summary of your bike fit analysis.</p>
                 <button type="button" id="closeHelpBtn">Got it!</button>
+            </div>
+        </div>
+
+        <!-- "More" modal: fit theory and book resources -->
+        <div id="moreModal" class="modal-overlay" hidden>
+            <div class="modal-box">
+                <div class="modal-header">
+                    <h2>Fit Theory &amp; Resources</h2>
+                    <button type="button" id="moreModalClose" aria-label="Close">&#x2715;</button>
+                </div>
+                <div class="modal-body">
+                    <section class="theory-text">
+                        <p>Saddle height is the most fundamental bike fit adjustment. A saddle set too low creates excessive knee flexion at the bottom of the pedal stroke, loading the patellofemoral joint and reducing power output. The ideal target is 25–35° of knee flexion when the pedal is at the 6 o'clock position — most riders achieve this with a saddle height around 109% of inseam length. Getting this right alone can resolve many common cycling knee complaints.</p>
+                        <p>Reach and stack — the horizontal and vertical distance from saddle to handlebar — determine your torso angle, shoulder load, and breathing efficiency. An aggressive, lower front end improves aerodynamics but demands greater core strength and hip flexibility. A higher, relaxed position reduces muscle fatigue on long rides and keeps the hip angle open at the top of each pedal stroke. The goal is finding the balance point where you generate consistent power without accumulating strain over hours in the saddle.</p>
+                    </section>
+                    <section class="theory-resources">
+                        <a class="book-card" href="https://amzn.to/4tS0g5z" target="_blank" rel="noopener noreferrer">
+                            <div class="book-cover book-cover-bikefit"></div>
+                            <span class="book-title">Bike Fit</span>
+                            <span class="book-author">Phil Burt</span>
+                        </a>
+                        <a class="book-card" href="https://amzn.to/3QItNjC" target="_blank" rel="noopener noreferrer">
+                            <div class="book-cover book-cover-ctb"></div>
+                            <span class="book-title">The Cyclist's Training Bible</span>
+                            <span class="book-author">Joe Friel</span>
+                        </a>
+                    </section>
+                </div>
             </div>
         </div>
     </div>
