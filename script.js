@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const rectH     = fontSize + PAD_Y * 2;
 
                 ctx.save();
-                ctx.fillStyle = 'rgba(0, 0, 0, 1)';
+                ctx.fillStyle = 'rgb(200, 200, 200)';
                 if (ctx.roundRect) {
                     ctx.beginPath();
                     ctx.roundRect(rectLeft, rectTop, rectW, rectH, 4);
