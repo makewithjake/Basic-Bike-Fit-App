@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // 2. Translucent pill background behind the label text.
                 ctx.font = 'bold 16px Arial';
-                const labelText = `${name}: ${display}°`;
+                const labelText = `${isOk ? '✅' : '❌'} ${name}: ${display}°`;
                 const PAD_X     = 6;
                 const PAD_Y     = 4;
                 const fontSize  = 16;
@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const rectH     = fontSize + PAD_Y * 2;
 
                 ctx.save();
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+                ctx.fillStyle = 'rgba(0, 0, 0, 1)';
                 if (ctx.roundRect) {
                     ctx.beginPath();
                     ctx.roundRect(rectLeft, rectTop, rectW, rectH, 4);
