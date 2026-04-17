@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastY         = 0;    // Last recorded pointer Y position during drag
     let demoLoading   = false; // Prevents multiple simultaneous demo image requests
     let isHelpImage   = false; // True while the help placeholder is shown (not a real fit photo)
+    let isMirrored    = false; // Tracks whether the current image has been flipped horizontally
 
     // ── Demo Image URL ────────────────────────────────────────────────────────
     const DEMO_URL = 'Assets/Bike_fit_demo_image.png';
@@ -708,6 +709,46 @@ document.addEventListener('DOMContentLoaded', () => {
         img.src = HELP_URL;
     }
 
+    // ============================================================
+    // FLIP IMAGE
+    // ============================================================
+
+    /**
+     * flipImage()
+     *
+     * Mirrors the currently loaded photo horizontally by drawing it onto an
+     * off-screen canvas with a scale(-1, 1) transform and replacing img.src
+     * with the resulting data URL. Clears all joint markers because their
+     * stored canvas-space coordinates are no longer valid after the flip.
+     *
+     * Guards: does nothing if no real photo is loaded.
+     */
+    function flipImage() {
+        if (!img.src || img.style.display === 'none' || !img.naturalWidth || isHelpImage) return;
+
+        const w = img.naturalWidth;
+        const h = img.naturalHeight;
+
+        const offscreen    = document.createElement('canvas');
+        offscreen.width    = w;
+        offscreen.height   = h;
+        const offCtx = offscreen.getContext('2d');
+
+        // Translate right by the full width, then flip the X axis to mirror.
+        offCtx.translate(w, 0);
+        offCtx.scale(-1, 1);
+        offCtx.drawImage(img, 0, 0);
+
+        // Existing markers are now spatially wrong – clear them.
+        points     = [];
+        isMirrored = !isMirrored;
+
+        img.onload = () => { draw(); };
+        img.src    = offscreen.toDataURL('image/png');
+    }
+
+    document.getElementById('mirrorBtn').addEventListener('click', flipImage);
+
     // Demo: loads the built-in sample image. Existing markers are kept so users
     // can immediately see what positioned markers look like.
     document.getElementById('demoBtn').addEventListener('click', () => loadDemoImage(DEMO_URL, false));
@@ -715,6 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Clear: removes all joint markers, hides the image, and wipes saved session data.
     document.getElementById('clearBtn').addEventListener('click', () => {
         points                = [];
+        isMirrored            = false;
         resultsArea.innerHTML = '';
         demoLoading           = false;
         img.onload            = null;  // Cancel any pending image load callbacks

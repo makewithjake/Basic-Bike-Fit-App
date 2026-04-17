@@ -115,6 +115,24 @@ th {
     color:      #333;
 }
 
+/* Wrapper that centres the Flip Image button between the photo and results table. */
+.mirror-btn-wrap {
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Flip Image button: compact, sits inline rather than full-width. */
+.mirror-btn {
+    background:    var(--color-slate);
+    color:         white;
+    padding:       8px 22px;
+    border-radius: 6px;
+    font-size:     0.88rem;
+    font-weight:   600;
+    width:         auto;   /* Override the global button { width: 100% } rule */
+    cursor:        pointer;
+}
+
 .action-buttons {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
